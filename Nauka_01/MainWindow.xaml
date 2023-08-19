@@ -1,0 +1,183 @@
+﻿<Window x:Class="Basic_Openness.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        
+        xmlns:b="clr-namespace:Nauka_01"
+        xmlns:local="clr-namespace:Basic_Openness"
+
+        mc:Ignorable="d"
+        Title="MainWindow" Height="535" Width="800">
+    <Window.Resources>
+        <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+        <local:TiaPortalModeToVisibilityConverter x:Key="TiaPortalModeToVisibilityConverter"/>
+        <!-- zasoby logiczne. Można je wykorzystać np do formatowania wyglądu obiektów-->
+        <LinearGradientBrush x:Key="tloPrzyciskow" StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="White" Offset="0"/>
+            <GradientStop Color="LightBlue" Offset="1"/>
+        </LinearGradientBrush>
+        <!--STYLE-->
+        <Style x:Key="stylElementow">
+            <Setter Property="Control.Margin" Value="2"/>
+            <Setter Property="Control.Padding" Value="2"/>
+            <Setter Property="Control.FontSize" Value="14"/>
+            <Setter Property="Control.FontWeight" Value="Bold"/>
+            <Setter Property="Control.FontStyle" Value="Italic"/>
+
+            <Setter Property="Control.BorderBrush" Value="Black"/>
+            <Setter Property="Control.BorderThickness" Value="2"/>
+            <Setter Property="Control.Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                        <GradientStop Color="White" Offset="0"/>
+                        <GradientStop Color="Gray" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="{x:Type TextBlock}">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="Blue"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="FontSize" Value="14"/>
+                    <Setter Property="Foreground" Value="Green"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="{x:Type TextBox}">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="Blue"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="FontSize" Value="14"/>
+                    <Setter Property="Foreground" Value="Green"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="stylRadioButton" TargetType="{x:Type RadioButton}">
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                        <GradientStop Color="White" Offset="0"/>
+                        <GradientStop Color="Gray" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Window.Resources>
+    <Grid x:Name="Ramka" Margin="-10,0,10,0">
+        <TabControl Style="{StaticResource stylElementow}">
+            <TabItem Header="TIA portal mode">
+                <StackPanel Margin="0,0,552,0" >
+                    <StackPanel.Resources>
+                        <Style x:Key="styleLabel" TargetType="{x:Type Label}">
+                            <Setter Property="Margin" Value="5"/>
+                            <Setter Property="Background"  Value="LightBlue"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=TiaWithGui , Path=IsChecked}" Value="True">
+                                    <Setter Property="Background" Value="Red" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                        <Style x:Key="stylPolaTekstowego" TargetType="TextBox">
+                            <Setter Property="MaxLength" Value="11"/>
+                            <Setter Property="Width" Value="80"/>
+                            <Setter Property="Background" Value="LightPink"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Text.Length}" Value="3">
+                                    <Setter Property="Background" Value="White"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                        <Style x:Key="styleIfRadioButtonOn" TargetType="{x:Type TextBox}">
+                            <Setter Property="HorizontalAlignment" Value="Right" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding TiaPortalMode}" Value="WithUserInterface"> 
+                                    <!-- Value="z palca wpisany string bardzo mnie mierzi ale nie mam na razie pojecia jak to zrobic poprawnie
+                                    dziala też przy wpisaniu wartości "0" albo "1" co jest jeszcze brzydszym rozwiązaniem, fuuuj ale brzydal ;) -->
+                                    <Setter Property="Foreground" Value="Red"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Resources>
+                    <RadioButton x:Name="TiaWithGui"
+                    IsChecked="{Binding TiaPortalMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter='WithUserInterface', Mode=TwoWay}" GroupName="Radio1" Content="With UI" HorizontalAlignment="Center"  Style="{StaticResource stylRadioButton}" VerticalAlignment="Top">
+                    </RadioButton>
+                    <RadioButton x:Name="TiaWithoutGui" IsChecked="{Binding TiaPortalMode, ConverterParameter='WithoutUserInterface', Converter={StaticResource EnumToBooleanConverter}, Mode=TwoWay}" GroupName="Radio1" HorizontalAlignment="Center" Content="Without UI" Style="{StaticResource stylRadioButton}"
+                                 Height="17" Width="100"/>
+                    <Label x:Name="lbTiaPortalMode" Content="{Binding TiaPortalMode}" Visibility="{Binding TiaPortalMode, Converter={StaticResource TiaPortalModeToVisibilityConverter}}" Height="27" BorderBrush="#FF120707" Width="154" Background="#FFB5E0B5"/>
+                    <Popup IsOpen="{Binding ElementName=TiaWithoutGui, Path=IsChecked}">
+                        <!--z jakiegos powodu nie moge ustawic bindingu na Lable. Prawdopodobnie dlatego, ze ten Lable ma Converter.
+                    Nie powinno to miec znaczenia ale jednak ma i jeszcze tego nie rozumien-->
+                        <TextBox Text="test popup - bindowanie z TiaWithoutGui.isChecked"/>
+                    </Popup>
+                    <Label Content="{Binding TiaPortalMode}" Style="{StaticResource styleLabel}" Height="28" />
+                    <Label Content="test styleIfRadioButtonOn" Height="28"/>
+                    <TextBox Text="{Binding TiaPortalMode}" Style="{StaticResource styleIfRadioButtonOn}" Height="28" />
+                    <Image Source="pack://application:,,,/Pictures/pot_with_earth.jpg" Height="100" Width="100"/>
+                    <WrapPanel>
+                        <Label Content="Wpisz 3 znaki"/>
+                        <TextBox Style="{StaticResource stylPolaTekstowego}"/>
+                    </WrapPanel>
+                </StackPanel>
+
+
+
+            </TabItem>
+            <TabItem Header="Hasiok">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.5*"/>
+                        <ColumnDefinition Width="1.5*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Margin="5" Grid.Row="0" Grid.Column="0" >
+
+                        <Button x:Name="btn_OpenTia" Content="Open TIA" HorizontalAlignment="Left" Style="{StaticResource stylElementow}" Height="29" Width="166" Click="btn_OpenTia_Click"/>
+                        <TextBlock x:Name="tblProcesID" HorizontalAlignment="Left"  TextWrapping="Wrap" Text="Get Current Process ID" VerticalAlignment="Top" Height="20" Width="165"/>
+                        <TextBlock x:Name="tblCurrentProcesses" HorizontalAlignment="Left" Margin="5" TextWrapping="Wrap" Text="Current Processes" Height="80" Width="170"/>
+                        <Button x:Name="btn_GetCurrentProcesses" Content="Get Current Processes" HorizontalAlignment="Left"  VerticalAlignment="Top" Height="35" Width="140" Click="btn_GetCurrentProcesses_Click"/>
+                        <ListBox x:Name="lBoxTraceWriter" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="5" Height="55"/>
+                        <Button x:Name="btnTiaGuiModeSubmit" Content="Sprawdz wybrana opcje" HorizontalAlignment="Left"  VerticalAlignment="Top" Height="28" Width="125" Click="btnTiaGuiModeSubmit_Click"/>
+                        <TextBox x:Name="tBoxZapis" HorizontalAlignment="Left" Margin="5" TextWrapping="Wrap" Text="{Binding iValue}" VerticalAlignment="Top" Width="120"/>
+                        <TextBox x:Name="tBoxOdczyt" HorizontalAlignment="Left" Margin="5" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+                        <TextBox x:Name="tBoxLicznik" HorizontalAlignment="Left" Margin="5" TextWrapping="Wrap" Text="{Binding Licznik}" VerticalAlignment="Top" Width="120" />
+
+                    </StackPanel>
+                    <StackPanel Margin="5" Grid.Row="0" Grid.Column="1">
+
+                    </StackPanel>
+
+                    <StackPanel Margin="5" Grid.Row="0" Grid.Column="2">
+                        <Button x:Name="cos" Content="Licznik" HorizontalAlignment="Right" Margin="5" VerticalAlignment="Top" Style="{StaticResource stylElementow}" Height="27" Width="160" Click="Button_Click"/>
+                        <Label x:Name="etykietka" Content="licznik" HorizontalAlignment="Right" Margin="5" VerticalAlignment="Top" Height="28" Width="98"/>
+                    </StackPanel>
+
+                </Grid>
+            </TabItem>
+
+
+
+
+        </TabControl>
+    </Grid>
+</Window>
+
