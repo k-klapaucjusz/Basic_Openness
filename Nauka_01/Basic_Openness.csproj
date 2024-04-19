@@ -78,8 +78,17 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="EnumToBooleanConverter.cs" />
+    <Compile Include="KolekcjaZadan.cs" />
+    <Compile Include="Produkt.cs" />
     <Compile Include="Services\BasicOpennessServices.cs" />
+    <Compile Include="BoolToVisibilityConverter.cs" />
+    <Compile Include="Tests.cs" />
+    <Compile Include="TiaPortalProcessIdToStringConverter.cs" />
+    <Compile Include="TiaPortalModeToBoolConverter.cs" />
     <Compile Include="TiaPortalModeToVisibilityConverter.cs" />
+    <Compile Include="TiaPortalProcessId.cs" />
+    <Compile Include="TreeNode.cs" />
+    <Compile Include="Zadanie.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

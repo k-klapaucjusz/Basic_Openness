@@ -12,6 +12,9 @@
     <Window.Resources>
         <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
         <local:TiaPortalModeToVisibilityConverter x:Key="TiaPortalModeToVisibilityConverter"/>
+        <local:TiaPortalModeToBoolConverter x:Key="TiaPortalModeToBoolConverter"/>
+        <local:TiaPortalProcessIdToStringConverter x:Key="TiaPortalProcessIdToStringConverter"/>
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <!-- zasoby logiczne. Można je wykorzystać np do formatowania wyglądu obiektów-->
         <LinearGradientBrush x:Key="tloPrzyciskow" StartPoint="0.5,0" EndPoint="0.5,1">
             <GradientStop Color="White" Offset="0"/>
@@ -22,7 +25,7 @@
             <Setter Property="Control.Margin" Value="2"/>
             <Setter Property="Control.Padding" Value="2"/>
             <Setter Property="Control.FontSize" Value="14"/>
-            <Setter Property="Control.FontWeight" Value="Bold"/>
+            <!--<Setter Property="Control.FontWeight" Value="Bold"/>-->
             <Setter Property="Control.FontStyle" Value="Italic"/>
 
             <Setter Property="Control.BorderBrush" Value="Black"/>
@@ -76,6 +79,13 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <!-- SZABLON KONTROLEK -->
+        <ControlTemplate x:Key="szablonPrzycisku" TargetType="Button">
+            <Grid>
+                <Ellipse Fill="Lavender" Width="100" Height="50" Stroke="Black"/>
+                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Grid>
+        </ControlTemplate>
 
     </Window.Resources>
     <Grid x:Name="Ramka" Margin="-10,0,10,0">
@@ -105,7 +115,7 @@
                         <Style x:Key="styleIfRadioButtonOn" TargetType="{x:Type TextBox}">
                             <Setter Property="HorizontalAlignment" Value="Right" />
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding TiaPortalMode}" Value="WithUserInterface"> 
+                                <DataTrigger Binding="{Binding TiaPortalMode}" Value="WithUserInterface">
                                     <!-- Value="z palca wpisany string bardzo mnie mierzi ale nie mam na razie pojecia jak to zrobic poprawnie
                                     dziala też przy wpisaniu wartości "0" albo "1" co jest jeszcze brzydszym rozwiązaniem, fuuuj ale brzydal ;) -->
                                     <Setter Property="Foreground" Value="Red"/>
@@ -144,12 +154,15 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.5*"/>
-                        <ColumnDefinition Width="1.5*"/>
-                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="69*"/>
+                        <ColumnDefinition Width="55*"/>
+                        <ColumnDefinition Width="10*"/>
+                        <ColumnDefinition Width="129*"/>
+                        <ColumnDefinition Width="350*"/>
+                        <ColumnDefinition Width="175*"/>
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Margin="5" Grid.Row="0" Grid.Column="0" >
+                    <StackPanel Margin="5,5,5,5" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" >
 
                         <Button x:Name="btn_OpenTia" Content="Open TIA" HorizontalAlignment="Left" Style="{StaticResource stylElementow}" Height="29" Width="166" Click="btn_OpenTia_Click"/>
                         <TextBlock x:Name="tblProcesID" HorizontalAlignment="Left"  TextWrapping="Wrap" Text="Get Current Process ID" VerticalAlignment="Top" Height="20" Width="165"/>
@@ -162,15 +175,139 @@
                         <TextBox x:Name="tBoxLicznik" HorizontalAlignment="Left" Margin="5" TextWrapping="Wrap" Text="{Binding Licznik}" VerticalAlignment="Top" Width="120" />
 
                     </StackPanel>
-                    <StackPanel Margin="5" Grid.Row="0" Grid.Column="1">
+                    <StackPanel Margin="5,5,5,5" Grid.Row="0" Grid.Column="4">
+                        <StackPanel.Resources>
+                            <local:KolekcjaZadan x:Key="KolekcjaZadan"/>
+                            <DataTemplate x:Key="szablonZadan">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Path=Nazwa}" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding Path=Opis}"/>
+                                    <TextBlock Text="{Binding Path=Priorytet}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </StackPanel.Resources>
+                        <ListView Height="200" x:Name="lstProdukty" d:ItemsSource="{d:SampleData ItemCount=5}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridView.Columns>
+                                        <GridViewColumn Header="Symbol" DisplayMemberBinding="{Binding Symbol}"/>
+                                        <GridViewColumn Header="Nazwa" DisplayMemberBinding="{Binding Nazwa}"/>
+                                        <GridViewColumn Header="Liczba sztuk" DisplayMemberBinding="{Binding LiczbaSztuk}"/>
+                                        <GridViewColumn Header="Magazyn" DisplayMemberBinding="{Binding Magazyn}"/>
+                                    </GridView.Columns>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+
+                        <TextBlock FontSize="14" Text="Lista zadań:" Margin="10,0"/>
+                        <ListBox Margin="10" ItemsSource="{Binding Source={StaticResource KolekcjaZadan}}" ItemTemplate="{StaticResource szablonZadan}">
+                        </ListBox>
+
+                        <Button Template="{StaticResource szablonPrzycisku}" Content="Widmo">
+                        </Button>
 
                     </StackPanel>
 
-                    <StackPanel Margin="5" Grid.Row="0" Grid.Column="2">
-                        <Button x:Name="cos" Content="Licznik" HorizontalAlignment="Right" Margin="5" VerticalAlignment="Top" Style="{StaticResource stylElementow}" Height="27" Width="160" Click="Button_Click"/>
+                    <StackPanel Margin="5,5,5,5" Grid.Row="0" Grid.Column="5">
+                        <Button x:Name="cos" Content="Licznik" HorizontalAlignment="Right" Margin="5" VerticalAlignment="Top" Style="{StaticResource stylElementow}" Height="27" Width="auto"  Click="Button_Click"/>
                         <Label x:Name="etykietka" Content="licznik" HorizontalAlignment="Right" Margin="5" VerticalAlignment="Top" Height="28" Width="98"/>
                     </StackPanel>
 
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Projects" Height="23" VerticalAlignment="Top">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto" MinWidth="250"/>
+
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                <!--<DockPanel LastChildFill="False">-->
+                    <!--<StackPanel DockPanel.Dock="Top" >-->
+                    <StackPanel Grid.Column="0" Grid.Row="0" >
+                        <!--<DockPanel LastChildFill="True">-->
+                                <Label Content="Select Project"/>
+                                <Button x:Name="btnProjectsOpenNewTia" Content="Open new TIA" Click="btnProjectsOpnNewTiaClick"/>
+                                <Button x:Name="btnProjectCloseTiaPortal" Content="Close TIA" Click="btnProjcetCloseTiaPortalClick"/>
+
+                                <CheckBox Content="Open project with UI" IsChecked="{Binding TiaPortalMode, Converter={StaticResource TiaPortalModeToBoolConverter}, Mode=TwoWay}">
+                                </CheckBox>
+                                <TextBox x:Name="textBoxProjectCurrentProcess" TextWrapping="Wrap" Text="{Binding CurrentTiaPortalProcess.Id, Mode=OneWay}" Height="25" Margin="2"/>
+                                    <ListView x:Name="listProcesses">
+                                        <ListView.View>
+                                            <GridView>
+                                                <GridView.Columns>
+                                                    <GridViewColumn Header="ID"
+                                                        DisplayMemberBinding="{Binding ProcessId}">
+                                                    </GridViewColumn>
+                                                    <GridViewColumn Header="Mode" 
+                                                        DisplayMemberBinding="{Binding UiMode}">
+                                                    </GridViewColumn>
+
+                                                </GridView.Columns>
+                                            </GridView>
+                                        </ListView.View>
+                                    </ListView>
+
+                                <WrapPanel >
+                                    <TextBlock Text="Selected instance:  "/>
+                                    <TextBox x:Name="textBoxProjectsSelectedInstances" Text="{Binding ElementName=listProcesses, Path=SelectedItem, Converter={StaticResource TiaPortalProcessIdToStringConverter}, Mode=OneWay}"/>
+
+                                </WrapPanel>
+                                <DockPanel>
+                                    <Button x:Name="btnProjectsConnectTiaInstance"  Content="Connect TIA instance" DockPanel.Dock="Left" Click="btnProjectsConnectTiaInstanceClick"/>
+                                    <Button x:Name="btnProjectRefresh" Content="Refrersh" DockPanel.Dock="Right" 
+                                    Click="btnProjectRefreshClick">
+                                    </Button>
+                                </DockPanel>
+
+                                <Button x:Name="btnProjectsOpenProject" Content="Open project" Click="btnProjectsOpenProjectClick"/>
+                                <Button x:Name="btnProjectsCloseProject" Content="Close project" Click="btnProjectsCloseProjectClick"/>
+                                <Separator HorizontalAlignment="Stretch" Background="Red"/>
+                                <Button x:Name="btnProjectsTest1" Content="Test - GetCompositionInfos()" Click="btnProjectsTest1Click"/>
+                                <Button x:Name="btnProjectsTreeView" Content="Project tree" Click="btnProjectsTreeViewClick"/>
+
+                            
+                        <!--</DockPanel>-->
+                    </StackPanel>
+                    <DockPanel Grid.Column="1" Grid.Row="0" >
+                        <Label Content="Project tree" DockPanel.Dock="Top"/>
+
+
+                        <ScrollViewer VerticalScrollBarVisibility="Visible" PanningMode="VerticalOnly">
+                            <TreeView Name="treeView" >
+                                <TreeView.ItemTemplate>
+                                    <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                        <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Name}" />
+                                            <TextBlock Text=" ["/>
+                                            <TextBlock Text="{Binding Number}"/>
+                                            <TextBlock Text="] "/>
+                                            <TextBlock Text=" #"/>
+                                            <TextBlock Text="{Binding Type}"/>
+                                        </StackPanel>
+                                    </HierarchicalDataTemplate>
+                                </TreeView.ItemTemplate>
+                            </TreeView>
+                        </ScrollViewer>
+                    </DockPanel>
+
+                    <!--<WrapPanel DockPanel.Dock="Bottom">-->
+                    <WrapPanel Grid.Column="0" Grid.ColumnSpan="3"  Grid.Row="1">
+                        <TextBlock Text=" TiaPortal Disposed " VerticalAlignment="Center" Background="Red" Visibility="{Binding TiaPortalIsDisposed, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        <Label Content="No of proj: " Height="30" >
+                        </Label>
+                        <TextBox Text="{Binding NrOfProjects}"  />
+                        <TextBox x:Name="textBoxProjectsDefaultProjectName" Text="{Binding CurrentProject.Path, Mode=OneWay}" />
+
+                    </WrapPanel>
+                <!--</DockPanel>-->
                 </Grid>
             </TabItem>
 

@@ -25,6 +25,11 @@ using System.Windows.Shapes;
 //using Basic_Openness;
 using System.Globalization;
 using Nauka_01;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using Microsoft.Win32;
+using Basic_Openness.Models;
+using Siemens.Engineering.SW.Blocks;
 
 namespace Basic_Openness
 {
@@ -108,7 +113,13 @@ namespace Basic_Openness
 
         //public int Licznik { get; private set; }
 
+        private ObservableCollection<Produkt> ListaProduktow = null;
+
         private IList<TiaPortalProcess> _tiaPortalProcessList;
+
+        // zakładka Processes
+        private ObservableCollection<TiaPortalProcessId> _processesIdObservableCollection = null;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -122,6 +133,30 @@ namespace Basic_Openness
             //tBoxLicznik.DataContext = _apiWrapper;
             //tBoxZapis.DataContext = _apiWrapper; // bez tej linii nie zadziała BINDING Text="{Binding iValue}" 
             // czyli tak na chłopski rozum trzeba wskazać klasę w której znajduje się iValue żeby binding w XAML zadziałał
+
+            PrzygotujWiazanie(); // fragment przekopiowany z książki
+            // zakładka Processes
+            _processesIdObservableCollection = new ObservableCollection<TiaPortalProcessId>();
+            listProcesses.ItemsSource = _processesIdObservableCollection;
+            _processesIdObservableCollection.Add(new TiaPortalProcessId(1, "A")); //inicjalizacja do testów
+            _processesIdObservableCollection.Add(new TiaPortalProcessId(2, "b")); //inicjalizacja do testów
+            _processesIdObservableCollection.Add(new TiaPortalProcessId(3, "C")); //inicjalizacja do testów
+
+        }
+
+        private void PrzygotujWiazanie()
+        {
+            ListaProduktow = new ObservableCollection<Produkt>();
+            ListaProduktow.Add(new Produkt("O1-11", "ołówek", 8, "Katowice 1"));
+            ListaProduktow.Add(new Produkt("PW-20", "pióro wieczne", 75, "Katowice 2"));
+            ListaProduktow.Add(new Produkt("DZ-10", "długopis żelowy", 1121,
+            "Katowice 1"));
+            ListaProduktow.Add(new Produkt("DZ-12", "długopis kulkowy", 280,
+            "Katowice 2"));
+            lstProdukty.ItemsSource = ListaProduktow;
+
+            CollectionView widok = (CollectionView)CollectionViewSource.GetDefaultView(lstProdukty.ItemsSource);
+            widok.SortDescriptions.Add(new SortDescription("Magazyn", ListSortDirection.Ascending));
         }
 
 
@@ -175,5 +210,233 @@ namespace Basic_Openness
             tBoxOdczyt.Text = _apiWrapper.iValue;
 
         }
+
+        private void btnProjectsOpnNewTiaClick(object sender, RoutedEventArgs e)
+        {
+            _apiWrapper.DoOpenTiaPortal();
+            _apiWrapper.DoGetTiaPortalProcesses();
+            Console.WriteLine($"Number of processes: {_apiWrapper.ProcessList.Count}");
+            if (_apiWrapper.ProcessList.Count > 0)
+            {
+                _processesIdObservableCollection.Clear();
+                foreach (var itemProcess in _apiWrapper.ProcessList)
+                {
+                    var mode = itemProcess.Mode == TiaPortalMode.WithoutUserInterface ? " Without UI" : " With UI";
+                    _processesIdObservableCollection.Add(new TiaPortalProcessId(itemProcess.Id, mode));
+
+                    //if (_processesIdObservableCollection.Any(item => item.ProcessId == itemProcess.Id))
+                    //    ;
+                    //else
+                    //{
+                    //    var mode = itemProcess.Mode == TiaPortalMode.WithoutUserInterface ? " Without UI" : " With UI";
+                    //    _processesIdObservableCollection.Add(new TiaPortalProcessId(itemProcess.Id, mode));
+                    //}
+                }
+            }
+
+            if (_apiWrapper.TiaPortal != null)
+            {
+                Console.WriteLine($"{this.ToString()} -- TiaPortal not null -- {_apiWrapper.DoGetCurrentTiaProcessId()} ");
+                textBoxProjectCurrentProcess.Text = _apiWrapper.DoGetCurrentTiaProcessId();
+            }
+            else
+            {
+                Console.WriteLine($"{this.ToString()} -- TiaPortal is NULL ");
+                textBoxProjectCurrentProcess.Text = "opening failed";
+            }
+
+
+
+        }
+
+        private void btnProjectsConnectTiaInstanceClick(object sender, RoutedEventArgs e)
+        {
+            int index = listProcesses.SelectedIndex;
+            TiaPortalProcessId tiaPortalProcessId = listProcesses.SelectedItem as TiaPortalProcessId;
+            if (tiaPortalProcessId != null)
+            {
+                Console.WriteLine($"OBJECT: listProcesses, Selected index: {index}, Process id: {tiaPortalProcessId.ProcessId}");
+                _apiWrapper.DoConnectTiaPortal(tiaPortalProcessId.ProcessId);
+                _apiWrapper.DoLoadProject();
+                _apiWrapper.DoGetTiaPortalProcesses();
+                //_apiWrapper.DoGetCurrentTiaProcessId(); // tylko zwraca CurrentTiaPortalProcess - gdzieś inndziej to pole jest ustawiane
+                //textBoxProjectCurrentProcess.Text = _apiWrapper.CurrentTiaPortalProcess != null ? _apiWrapper.CurrentTiaPortalProcess.Id.ToString() : "null";
+                Console.WriteLine($"Przycisk: Connect TIA instance => sprawdzenie jak zmienia się CurrentTiaPortalProcess = {_apiWrapper.CurrentTiaPortalProcess?.Id.ToString()}");
+            }
+            if (_apiWrapper.TiaPortal != null)
+            {
+                _apiWrapper.NrOfProjects = _apiWrapper.TiaPortal.Projects.Count;
+                Console.WriteLine($"NrOfProjcets: {_apiWrapper.TiaPortal.Projects.Count}");
+                //ta linia ciągle wywala błąd !!!
+                //textBoxProjectsDefaultProjectName.Text = _apiWrapper.TiaPortal.Projects?.FirstOrDefault().ToString();
+
+            }
+
+
+        }
+
+        private void btnProjectsOpenProjectClick(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Title = "Select project";
+            bool? result = openFileDialog.ShowDialog();
+            if (result == true)
+            {
+                Console.WriteLine($"Wybrany plik: {openFileDialog.FileName}");
+                _apiWrapper.DoOpenProject(openFileDialog.FileName);
+            }
+
+            //od tego jutro zacząć
+            //_apiWrapper.TiaPortal.Projects.FirstOrDefault().Name; //
+            // sprawdzić ilość projektów
+            var hasiok = _apiWrapper.TiaPortal.Projects.Count;
+            _apiWrapper.NrOfProjects = _apiWrapper.TiaPortal.Projects.Count;
+
+
+
+        }
+
+        private void btnProjectRefreshClick(object sender, RoutedEventArgs e)
+        {
+            _apiWrapper.DoGetTiaPortalProcesses();
+            if (_apiWrapper.ProcessList.Count > 0)
+            {
+                _processesIdObservableCollection.Clear();
+                foreach (var itemProcess in _apiWrapper.ProcessList)
+                {
+                    var mode = itemProcess.Mode == TiaPortalMode.WithoutUserInterface ? " Without UI" : " With UI";
+                    _processesIdObservableCollection.Add(new TiaPortalProcessId(itemProcess.Id, mode));
+                }
+            }
+            if (_apiWrapper.CurrentProject != null)
+            {
+                Console.WriteLine($"CurrentProject.Path: {_apiWrapper.CurrentProject.Path}");
+            }
+            else
+                Console.WriteLine($"CurrentProject.Path: NULL");
+
+        }
+
+
+        private void btnProjcetCloseTiaPortalClick(object sender, RoutedEventArgs e)
+        {
+            _apiWrapper.DoCloseTiaPortal();
+
+        }
+
+        private void btnProjectsCloseProjectClick(object sender, RoutedEventArgs e)
+        {
+            _apiWrapper.DoCloseProject();
+        }
+
+        private void btnProjectsTest1Click(object sender, RoutedEventArgs e)
+        {
+            Tests.DisplayCompositionInfos(_apiWrapper.TiaPortal.Projects.FirstOrDefault());
+
+        }
+
+        private void btnProjectsTreeViewClick(object sender, RoutedEventArgs e)
+        {
+
+            TreeNode rootNode = new TreeNode("TIA PORTAL");
+
+            // Dodaj kolejne węzły zgodnie z hierarchią Twojej struktury danych
+            foreach (var project in _apiWrapper.TiaPortal.Projects)
+            {
+                var projectNode = new TreeNode(project.Name);
+                rootNode.Children.Add(projectNode);
+
+                SoftwareContainer softwareContainerFromProject = ((IEngineeringServiceProvider)project).GetService<SoftwareContainer>();
+                //SoftwareContainer softwareContainer1 = ((IEngineeringServiceProvider)deviceItem).GetService<SoftwareContainer>();
+                if (softwareContainerFromProject != null)
+                {
+                    Console.WriteLine("TREE - softwareContainerFromProject NOT null");
+                }
+                else { Console.WriteLine("TREE - softwareContainerFromProject == NULL :("); }
+
+                foreach (var device in project.Devices)
+                {
+                    var deviceNode = new TreeNode(device.Name);
+                    projectNode.Children.Add(deviceNode);
+
+                    SoftwareContainer softwareContainer = ((IEngineeringServiceProvider)device).GetService<SoftwareContainer>();
+                    if (softwareContainer != null)
+                    {
+                        PlcSoftware software = softwareContainer.Software as PlcSoftware;
+
+                       
+
+                        foreach (var programBlock in software.BlockGroup.Blocks)
+                        {
+                            var programBlockNode = new TreeNode(programBlock.Name);
+                            deviceNode.Children.Add(programBlockNode);
+
+                            //foreach(var deviceContainer in deviceItem.Container.DeviceItems)
+                            //{
+                            //    var deviceContainerNode = new TreeNode(deviceContainer.Name);
+                            //    deviceItemNode.Children.Add(deviceContainerNode);
+                            //}
+
+                        }
+
+
+                    }
+                    else
+                    {
+                        Console.WriteLine("TREE - softwareContainer == NULL :(");
+                    }
+                    foreach(var deviceItem in device.DeviceItems)
+                    {
+                        var deviceItemNode = new TreeNode(deviceItem.Name);
+                        deviceNode.Children.Add(deviceItemNode);
+                        //szukanie software :)
+                        Siemens.Engineering.HW.DeviceItem deviceItemToGetService = deviceItem as Siemens.Engineering.HW.DeviceItem;
+                        SoftwareContainer softwareContainer1 = deviceItemToGetService.GetService<SoftwareContainer>();
+                        //SoftwareContainer softwareContainer1 = ((IEngineeringServiceProvider)deviceItem).GetService<SoftwareContainer>();
+                        if (softwareContainer1 != null)
+                        {
+                            PlcSoftware software = softwareContainer1.Software as PlcSoftware;
+                            Console.WriteLine($"TREE - softwareContainer1 NOT null :) {deviceItem.Name} % {software.BlockGroup.Name}");
+                            //PlcBlock codeBlock = ((IEngineeringServiceProvider)software.BlockGroup.).GetService<CodeBlock>();
+                            foreach(var programBlock in software.BlockGroup.Blocks)
+                            {
+                                TreeNode programBlockNode;
+                                if (programBlock is PlcBlock)
+                                {
+                                    string blockType = programBlock.GetType().ToString();
+                                    blockType = blockType.Substring(blockType.LastIndexOf(".") + 1);
+                                    programBlockNode = new TreeNode(programBlock.Name, programBlock.Number.ToString(), blockType);
+                                }
+                                else { programBlockNode = new TreeNode(programBlock.Name); }
+                                deviceItemNode.Children.Add(programBlockNode);
+                                
+                            }
+                            foreach (var blockGroup in software.BlockGroup.Groups)
+                            {
+                                var blockGrupNode = new TreeNode(blockGroup.Name);
+                                deviceItemNode.Children.Add(blockGrupNode);
+
+                                foreach(var programBlock in blockGroup.Blocks)
+                                {
+                                    var programBlockNode = new TreeNode(programBlock.Name);
+                                    blockGrupNode.Children.Add(programBlockNode);
+                                }
+                            }
+
+                            foreach (var blockGroupTest in software.BlockGroup.Groups)
+                            {
+                                Console.WriteLine(blockGroupTest.Name);
+                            }
+
+                        }
+                        else { Console.WriteLine("TREE - softwareContainer1 == NULL :("); }
+                    }
+                        
+                    }
+                }
+                treeView.Items.Clear();
+                treeView.Items.Add(rootNode);
+                //PlcSoftware plcSoftware = _apiWrapper.TiaPortal.Projects[0].Devices.PlcDevices[0].PlcSoftware;
+            }
+        }
     }
-}

@@ -28,6 +28,7 @@ namespace Basic_Openness
         private IList<TiaPortalProcess> _tiaPortalProcessList;
         private readonly TraceWriter _traceWriter;
         private TiaPortalMode _tiaPortalMode;
+        private int _nrOfProjects;
         public event PropertyChangedEventHandler PropertyChanged;
 
         #endregion // Fields
@@ -49,7 +50,8 @@ namespace Basic_Openness
         { get; set; }
         private int _licznik;
         public int Licznik
-        { get => _licznik;
+        {
+            get => _licznik;
             set
             {
                 if (value != _licznik)
@@ -59,11 +61,68 @@ namespace Basic_Openness
                 }
             }
         }
+        private TreeNode _projectTreeLeaf;
+
+        public TreeNode ProjectTreeLeaf
+        {
+            get => _projectTreeLeaf;
+            set
+            {
+                if (value != _projectTreeLeaf)
+                {
+                    _projectTreeLeaf = value;
+                    NotifyPropertyChanged(nameof(ProjectTreeLeaf));
+                }
+            }
+        }
+
         //moje testy 
-        public TiaPortalProcess CurrentTiaPortalProcess
+        //moje test =>
+        public IList<TiaPortalProcess> ProcessList
+        {
+            get => _tiaPortalProcessList;
+        }
+        public int NrOfProjects
+        {
+            get => _nrOfProjects;
+            set
+            {
+                if (value != _nrOfProjects)
+                {
+                    _nrOfProjects = value;
+                    NotifyPropertyChanged(nameof(NrOfProjects));
+                }
+            }
+        }
+        public TiaPortalProcess CurrentTiaPortalProcessView
+        {
+            get;    //ta właściwość jest tylko po to żeby w CurrentTiaPortalProcess zrobić NotifyPropertyChanged
+            set;
+        }
+
+        public bool TiaPortalIsDisposedView
         {
             get;
             set;
+        }
+        public Project CurrentProjectView
+        {
+            get;
+            set;
+        }
+
+        //moje testy <=
+        public TiaPortalProcess CurrentTiaPortalProcess
+        {
+            get => CurrentTiaPortalProcessView;
+            set
+            {
+                if (value != CurrentTiaPortalProcessView)
+                {
+                    CurrentTiaPortalProcessView = value;
+                    NotifyPropertyChanged(nameof(CurrentTiaPortalProcess));
+                }
+            }
         }
 
         public TiaPortal TiaPortal
@@ -74,8 +133,16 @@ namespace Basic_Openness
 
         public bool TiaPortalIsDisposed
         {
-            get;
-            set;
+            get => TiaPortalIsDisposedView;
+            set
+            {
+                if (value != TiaPortalIsDisposedView)
+                {
+                    TiaPortalIsDisposedView = value;
+                    NotifyPropertyChanged(nameof(TiaPortalIsDisposed));
+                }
+
+            }
         }
 
         public bool IsModified
@@ -86,8 +153,14 @@ namespace Basic_Openness
 
         public Project CurrentProject
         {
-            get;
-            set;
+            get => CurrentProjectView;
+            set
+            {
+                if (value != CurrentProjectView)
+                {
+                    NotifyPropertyChanged(nameof(CurrentProject));
+                }
+            }
         }
 
         public Project AvailableProject
@@ -132,7 +205,7 @@ namespace Basic_Openness
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        
+
 
         /// <summary>
         /// Get the enum value to a string
@@ -166,7 +239,7 @@ namespace Basic_Openness
             return enumValue;
         }
 
-      
+
         #endregion // common
 
         #region TIA Portal
@@ -203,6 +276,7 @@ namespace Basic_Openness
                 TiaPortal = portal;
                 TiaPortalIsDisposed = false;
             }
+            Console.WriteLine("DoConnectTiaPortal " + portal.GetCurrentProcess().Id);
         }
 
         /// <summary>
