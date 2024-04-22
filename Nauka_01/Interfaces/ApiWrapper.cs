@@ -5,6 +5,7 @@ using Siemens.Engineering.Hmi;
 using Siemens.Engineering.HW;
 using Siemens.Engineering.HW.Features;
 using Siemens.Engineering.SW;
+using Siemens.Engineering.SW.Blocks;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -72,6 +73,35 @@ namespace Basic_Openness
                 {
                     _projectTreeLeaf = value;
                     NotifyPropertyChanged(nameof(ProjectTreeLeaf));
+                }
+            }
+        }
+
+        private PlcBlock _projectSelectedPlcBlock;
+
+        public PlcBlock ProjectSelectedPlcBlock
+        {
+            get => _projectSelectedPlcBlock;
+            set
+            {
+                if (value != _projectSelectedPlcBlock)
+                {
+                    _projectSelectedPlcBlock = value;
+                    NotifyPropertyChanged(nameof(ProjectSelectedPlcBlock));
+                }
+            }
+        }
+
+        private List<PlcSoftware> _plcSoftwares = new List<PlcSoftware>();
+        public  List<PlcSoftware> PlcSoftwares
+        {
+            get => _plcSoftwares;
+            set
+            {
+                if (value != _plcSoftwares)
+                {
+                    _plcSoftwares = value;
+                    NotifyPropertyChanged(nameof(PlcSoftwares));
                 }
             }
         }

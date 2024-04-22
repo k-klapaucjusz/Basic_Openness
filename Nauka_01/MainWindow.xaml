@@ -53,6 +53,7 @@
         <Style TargetType="{x:Type TextBox}">
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Foreground" Value="Blue"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="FontSize" Value="14"/>
@@ -281,7 +282,7 @@
 
 
                         <ScrollViewer VerticalScrollBarVisibility="Visible" PanningMode="VerticalOnly">
-                            <TreeView Name="treeView" >
+                            <TreeView Name="treeView" SelectedItemChanged="treeViewProjectSelected">
                                 <TreeView.ItemTemplate>
                                     <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                                         <StackPanel Orientation="Horizontal">
@@ -298,11 +299,38 @@
                         </ScrollViewer>
                     </DockPanel>
 
+                    <DockPanel Grid.Column="2" Grid.Row="0">
+                        <StackPanel DockPanel.Dock="Top">
+                        <WrapPanel  >
+                            <Label Content="Selected element: "/>
+                            <TextBox x:Name="textBoxProjectsSelectedLeaf" Text="{Binding ProjectTreeLeaf.Name}"/>
+                            
+                        </WrapPanel>
+                            <Separator HorizontalAlignment="Stretch" Background="Green"/>
+                        </StackPanel>
+                        <StackPanel>
+                        <WrapPanel>
+                            <Label Content="The language of this block "/>
+                            <TextBox Text="{Binding ProjectSelectedPlcBlock.ProgrammingLanguage, Mode=OneWay}"/>
+                        </WrapPanel>
+                        <WrapPanel>
+                            <Label Content="Last code modification date: "/>
+                                <TextBox Text="{Binding ProjectSelectedPlcBlock.ProjectSelectedPlcBlock, Mode=OneWay}"/>
+                        </WrapPanel>
+                        <WrapPanel>
+                            <Label Content="Last code modification date: "/>
+                                <TextBox Text="{Binding ProjectSelectedPlcBlock.CompileDate, Mode=OneWay}"/>
+                        </WrapPanel>
+                        </StackPanel>
+                        
+
+                    </DockPanel>
+
                     <!--<WrapPanel DockPanel.Dock="Bottom">-->
                     <WrapPanel Grid.Column="0" Grid.ColumnSpan="3"  Grid.Row="1">
                         <TextBlock Text=" TiaPortal Disposed " VerticalAlignment="Center" Background="Red" Visibility="{Binding TiaPortalIsDisposed, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                        <Label Content="No of proj: " Height="30" >
-                        </Label>
+                        <Label Content="No of proj: " Height="30" />
+
                         <TextBox Text="{Binding NrOfProjects}"  />
                         <TextBox x:Name="textBoxProjectsDefaultProjectName" Text="{Binding CurrentProject.Path, Mode=OneWay}" />
 

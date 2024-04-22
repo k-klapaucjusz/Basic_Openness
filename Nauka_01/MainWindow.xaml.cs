@@ -364,7 +364,7 @@ namespace Basic_Openness
                     {
                         PlcSoftware software = softwareContainer.Software as PlcSoftware;
 
-                       
+
 
                         foreach (var programBlock in software.BlockGroup.Blocks)
                         {
@@ -385,7 +385,7 @@ namespace Basic_Openness
                     {
                         Console.WriteLine("TREE - softwareContainer == NULL :(");
                     }
-                    foreach(var deviceItem in device.DeviceItems)
+                    foreach (var deviceItem in device.DeviceItems)
                     {
                         var deviceItemNode = new TreeNode(deviceItem.Name);
                         deviceNode.Children.Add(deviceItemNode);
@@ -396,9 +396,13 @@ namespace Basic_Openness
                         if (softwareContainer1 != null)
                         {
                             PlcSoftware software = softwareContainer1.Software as PlcSoftware;
+                            if (software != null)
+                            {
+                                _apiWrapper.PlcSoftwares.Add(software);
+                            }
                             Console.WriteLine($"TREE - softwareContainer1 NOT null :) {deviceItem.Name} % {software.BlockGroup.Name}");
                             //PlcBlock codeBlock = ((IEngineeringServiceProvider)software.BlockGroup.).GetService<CodeBlock>();
-                            foreach(var programBlock in software.BlockGroup.Blocks)
+                            foreach (var programBlock in software.BlockGroup.Blocks)
                             {
                                 TreeNode programBlockNode;
                                 if (programBlock is PlcBlock)
@@ -407,18 +411,21 @@ namespace Basic_Openness
                                     blockType = blockType.Substring(blockType.LastIndexOf(".") + 1);
                                     programBlockNode = new TreeNode(programBlock.Name, programBlock.Number.ToString(), blockType);
                                 }
-                                else { programBlockNode = new TreeNode(programBlock.Name); }
+                                else
+                                    { programBlockNode = new TreeNode(programBlock.Name); }
                                 deviceItemNode.Children.Add(programBlockNode);
-                                
+
                             }
                             foreach (var blockGroup in software.BlockGroup.Groups)
                             {
                                 var blockGrupNode = new TreeNode(blockGroup.Name);
                                 deviceItemNode.Children.Add(blockGrupNode);
 
-                                foreach(var programBlock in blockGroup.Blocks)
+                                foreach (var programBlock in blockGroup.Blocks)
                                 {
-                                    var programBlockNode = new TreeNode(programBlock.Name);
+                                    string blockType = programBlock.GetType().ToString();
+                                    blockType = blockType.Substring(blockType.LastIndexOf(".") + 1);
+                                    var programBlockNode = new TreeNode(programBlock.Name, programBlock.Number.ToString(), blockType);
                                     blockGrupNode.Children.Add(programBlockNode);
                                 }
                             }
@@ -431,12 +438,49 @@ namespace Basic_Openness
                         }
                         else { Console.WriteLine("TREE - softwareContainer1 == NULL :("); }
                     }
-                        
-                    }
+
                 }
-                treeView.Items.Clear();
-                treeView.Items.Add(rootNode);
-                //PlcSoftware plcSoftware = _apiWrapper.TiaPortal.Projects[0].Devices.PlcDevices[0].PlcSoftware;
+            }
+            treeView.Items.Clear();
+            treeView.Items.Add(rootNode);
+            //PlcSoftware plcSoftware = _apiWrapper.TiaPortal.Projects[0].Devices.PlcDevices[0].PlcSoftware;
+        }
+
+        private void treeViewProjectSelected(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            bool blockNotFound = false;
+            _apiWrapper.ProjectTreeLeaf = (TreeNode)e.NewValue;
+            Console.WriteLine($"TREE VIEW: Selected leaf = {_apiWrapper.ProjectTreeLeaf?.Name}");
+            if (_apiWrapper.ProjectTreeLeaf != null && _apiWrapper.ProjectTreeLeaf.Name != String.Empty)
+            {       //!!!!! odniesienie do elementu 0 listy - może być więcej niż jedno urządzenie zawierające PlcSoftware.
+                    //!!!!! trzeba to poprawić żeby było bardziej uniwersalnie
+                if (_apiWrapper.PlcSoftwares[0].BlockGroup.Blocks.Find(_apiWrapper.ProjectTreeLeaf.Name) != null)
+                {
+                    // check blocks in main branch 
+                    _apiWrapper.ProjectSelectedPlcBlock = _apiWrapper.PlcSoftwares[0].BlockGroup.Blocks.Find(_apiWrapper.ProjectTreeLeaf.Name);
+
+                    Console.WriteLine($"TREE VIEW: SELECTED BLOCK = {_apiWrapper.ProjectSelectedPlcBlock.Name}");
+                    // teraz trzeba w xaml zrobić wyświetlenie właściwości bloku: nazwa, typ, data itd
+                    // poźniej przyciski export i import
+                }
+                else
+                    blockNotFound = true;
+                foreach (var group in _apiWrapper.PlcSoftwares[0].BlockGroup.Groups)
+                {
+                    // check blocks inside folders
+                    if(group.Blocks.Find(_apiWrapper.ProjectTreeLeaf.Name) != null)
+                    {
+                        _apiWrapper.ProjectSelectedPlcBlock = group.Blocks.Find(_apiWrapper.ProjectTreeLeaf.Name);
+                        break;
+                    }
+                    blockNotFound = true;
+                }
+                if (blockNotFound)
+                {
+                    Console.WriteLine($"TREE VIEW: Not found block #{_apiWrapper.ProjectTreeLeaf.Name}");
+                }
+
             }
         }
     }
+}
