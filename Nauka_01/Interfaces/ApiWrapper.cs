@@ -106,6 +106,33 @@ namespace Basic_Openness
             }
         }
 
+        private string _exportFolder = @"C:\__HASIOR\TIA_Openness_nauka\Exports";
+        public string ExportFolder
+        {
+            get { return _exportFolder; } set
+            {
+                if (_exportFolder != value)
+                {
+                    _exportFolder = value;
+                    NotifyPropertyChanged(nameof(ExportFolder));
+                }
+            }
+        }
+
+        private string _importFile = @"C:\__HASIOR\TIA_Openness_nauka\Imports";
+        public string ImportFile
+        {
+            get { return _importFile; }
+            set
+            {
+                if (_importFile != value)
+                {
+                    _importFile = value;
+                    NotifyPropertyChanged(nameof(ImportFile));
+                }
+            }
+        }
+
         //moje testy 
         //moje test =>
         public IList<TiaPortalProcess> ProcessList

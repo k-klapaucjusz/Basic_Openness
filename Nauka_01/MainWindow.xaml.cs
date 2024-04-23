@@ -30,6 +30,7 @@ using System.ComponentModel;
 using Microsoft.Win32;
 using Basic_Openness.Models;
 using Siemens.Engineering.SW.Blocks;
+using System.Windows.Forms;
 
 namespace Basic_Openness
 {
@@ -277,7 +278,7 @@ namespace Basic_Openness
 
         private void btnProjectsOpenProjectClick(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
+            Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
             openFileDialog.Title = "Select project";
             bool? result = openFileDialog.ShowDialog();
             if (result == true)
@@ -289,8 +290,7 @@ namespace Basic_Openness
             //od tego jutro zacząć
             //_apiWrapper.TiaPortal.Projects.FirstOrDefault().Name; //
             // sprawdzić ilość projektów
-            var hasiok = _apiWrapper.TiaPortal.Projects.Count;
-            _apiWrapper.NrOfProjects = _apiWrapper.TiaPortal.Projects.Count;
+            _apiWrapper.NrOfProjects = _apiWrapper.TiaPortal != null ? _apiWrapper.TiaPortal.Projects.Count : 0;
 
 
 
@@ -481,6 +481,54 @@ namespace Basic_Openness
                 }
 
             }
+        }
+
+        private void btnProjectsExportFolderClikc(object sender, RoutedEventArgs e)
+        {
+            //ExportFolder
+
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+
+            // Ustaw opcje wyboru folderu
+            folderBrowserDialog.Description = "Select folder";
+            folderBrowserDialog.RootFolder = Environment.SpecialFolder.Desktop;
+
+            // Wyświetl okno dialogowe i sprawdź czy użytkownik wybrał folder
+            DialogResult result = folderBrowserDialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                // Pobierz ścieżkę wybranego folderu
+                _apiWrapper.ExportFolder = folderBrowserDialog.SelectedPath;
+
+                // Wyświetl wybraną ścieżkę
+                Console.WriteLine("Selected folder: " + _apiWrapper.ExportFolder);
+            }
+            else
+            {
+                Console.WriteLine("Anulowano wybór folderu.");
+            }
+
+
+        }
+
+        private void btnProjectsExportBlockClick(object sender, RoutedEventArgs e)
+        {
+            if (_apiWrapper.ExportFolder != null) 
+            {
+                System.IO.FileInfo newFile = new System.IO.FileInfo(_apiWrapper.ExportFolder+@"\"+_apiWrapper.ProjectSelectedPlcBlock.Name+@".xml");
+                _apiWrapper.ProjectSelectedPlcBlock.Export(newFile , ExportOptions.None);
+            }
+
+        }
+
+        private void btnProjectsImportBlockClick(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnProjectsImportSelectFileClikc(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

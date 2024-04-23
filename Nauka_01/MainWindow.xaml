@@ -229,52 +229,52 @@
 
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                <!--<DockPanel LastChildFill="False">-->
+                    <!--<DockPanel LastChildFill="False">-->
                     <!--<StackPanel DockPanel.Dock="Top" >-->
                     <StackPanel Grid.Column="0" Grid.Row="0" >
                         <!--<DockPanel LastChildFill="True">-->
-                                <Label Content="Select Project"/>
-                                <Button x:Name="btnProjectsOpenNewTia" Content="Open new TIA" Click="btnProjectsOpnNewTiaClick"/>
-                                <Button x:Name="btnProjectCloseTiaPortal" Content="Close TIA" Click="btnProjcetCloseTiaPortalClick"/>
+                        <Label Content="Select Project"/>
+                        <Button x:Name="btnProjectsOpenNewTia" Content="Open new TIA" Click="btnProjectsOpnNewTiaClick"/>
+                        <Button x:Name="btnProjectCloseTiaPortal" Content="Close TIA" Click="btnProjcetCloseTiaPortalClick"/>
 
-                                <CheckBox Content="Open project with UI" IsChecked="{Binding TiaPortalMode, Converter={StaticResource TiaPortalModeToBoolConverter}, Mode=TwoWay}">
-                                </CheckBox>
-                                <TextBox x:Name="textBoxProjectCurrentProcess" TextWrapping="Wrap" Text="{Binding CurrentTiaPortalProcess.Id, Mode=OneWay}" Height="25" Margin="2"/>
-                                    <ListView x:Name="listProcesses">
-                                        <ListView.View>
-                                            <GridView>
-                                                <GridView.Columns>
-                                                    <GridViewColumn Header="ID"
+                        <CheckBox Content="Open project with UI" IsChecked="{Binding TiaPortalMode, Converter={StaticResource TiaPortalModeToBoolConverter}, Mode=TwoWay}">
+                        </CheckBox>
+                        <TextBox x:Name="textBoxProjectCurrentProcess" TextWrapping="Wrap" Text="{Binding CurrentTiaPortalProcess.Id, Mode=OneWay}" Height="25" Margin="2"/>
+                        <ListView x:Name="listProcesses">
+                            <ListView.View>
+                                <GridView>
+                                    <GridView.Columns>
+                                        <GridViewColumn Header="ID"
                                                         DisplayMemberBinding="{Binding ProcessId}">
-                                                    </GridViewColumn>
-                                                    <GridViewColumn Header="Mode" 
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="Mode" 
                                                         DisplayMemberBinding="{Binding UiMode}">
-                                                    </GridViewColumn>
+                                        </GridViewColumn>
 
-                                                </GridView.Columns>
-                                            </GridView>
-                                        </ListView.View>
-                                    </ListView>
+                                    </GridView.Columns>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
 
-                                <WrapPanel >
-                                    <TextBlock Text="Selected instance:  "/>
-                                    <TextBox x:Name="textBoxProjectsSelectedInstances" Text="{Binding ElementName=listProcesses, Path=SelectedItem, Converter={StaticResource TiaPortalProcessIdToStringConverter}, Mode=OneWay}"/>
+                        <WrapPanel >
+                            <TextBlock Text="Selected instance:  "/>
+                            <TextBox x:Name="textBoxProjectsSelectedInstances" Text="{Binding ElementName=listProcesses, Path=SelectedItem, Converter={StaticResource TiaPortalProcessIdToStringConverter}, Mode=OneWay}"/>
 
-                                </WrapPanel>
-                                <DockPanel>
-                                    <Button x:Name="btnProjectsConnectTiaInstance"  Content="Connect TIA instance" DockPanel.Dock="Left" Click="btnProjectsConnectTiaInstanceClick"/>
-                                    <Button x:Name="btnProjectRefresh" Content="Refrersh" DockPanel.Dock="Right" 
+                        </WrapPanel>
+                        <DockPanel>
+                            <Button x:Name="btnProjectsConnectTiaInstance"  Content="Connect TIA instance" DockPanel.Dock="Left" Click="btnProjectsConnectTiaInstanceClick"/>
+                            <Button x:Name="btnProjectRefresh" Content="Refrersh" DockPanel.Dock="Right" 
                                     Click="btnProjectRefreshClick">
-                                    </Button>
-                                </DockPanel>
+                            </Button>
+                        </DockPanel>
 
-                                <Button x:Name="btnProjectsOpenProject" Content="Open project" Click="btnProjectsOpenProjectClick"/>
-                                <Button x:Name="btnProjectsCloseProject" Content="Close project" Click="btnProjectsCloseProjectClick"/>
-                                <Separator HorizontalAlignment="Stretch" Background="Red"/>
-                                <Button x:Name="btnProjectsTest1" Content="Test - GetCompositionInfos()" Click="btnProjectsTest1Click"/>
-                                <Button x:Name="btnProjectsTreeView" Content="Project tree" Click="btnProjectsTreeViewClick"/>
+                        <Button x:Name="btnProjectsOpenProject" Content="Open project" Click="btnProjectsOpenProjectClick"/>
+                        <Button x:Name="btnProjectsCloseProject" Content="Close project" Click="btnProjectsCloseProjectClick"/>
+                        <Separator HorizontalAlignment="Stretch" Background="Red"/>
+                        <Button x:Name="btnProjectsTest1" Content="Test - GetCompositionInfos()" Click="btnProjectsTest1Click"/>
+                        <Button x:Name="btnProjectsTreeView" Content="Project tree" Click="btnProjectsTreeViewClick"/>
 
-                            
+
                         <!--</DockPanel>-->
                     </StackPanel>
                     <DockPanel Grid.Column="1" Grid.Row="0" >
@@ -286,7 +286,7 @@
                                 <TreeView.ItemTemplate>
                                     <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                                         <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding Name}" />
+                                            <TextBlock Text="{Binding Name}" />
                                             <TextBlock Text=" ["/>
                                             <TextBlock Text="{Binding Number}"/>
                                             <TextBlock Text="] "/>
@@ -301,28 +301,117 @@
 
                     <DockPanel Grid.Column="2" Grid.Row="0">
                         <StackPanel DockPanel.Dock="Top">
-                        <WrapPanel  >
-                            <Label Content="Selected element: "/>
-                            <TextBox x:Name="textBoxProjectsSelectedLeaf" Text="{Binding ProjectTreeLeaf.Name}"/>
-                            
-                        </WrapPanel>
+                            <WrapPanel  >
+                                <Label Content="Selected element: "/>
+                                <TextBox x:Name="textBoxProjectsSelectedLeaf" Text="{Binding ProjectTreeLeaf.Name}"/>
+
+                            </WrapPanel>
                             <Separator HorizontalAlignment="Stretch" Background="Green"/>
                         </StackPanel>
                         <StackPanel>
-                        <WrapPanel>
-                            <Label Content="The language of this block "/>
-                            <TextBox Text="{Binding ProjectSelectedPlcBlock.ProgrammingLanguage, Mode=OneWay}"/>
-                        </WrapPanel>
-                        <WrapPanel>
-                            <Label Content="Last code modification date: "/>
-                                <TextBox Text="{Binding ProjectSelectedPlcBlock.ProjectSelectedPlcBlock, Mode=OneWay}"/>
-                        </WrapPanel>
-                        <WrapPanel>
-                            <Label Content="Last code modification date: "/>
-                                <TextBox Text="{Binding ProjectSelectedPlcBlock.CompileDate, Mode=OneWay}"/>
-                        </WrapPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Content="The language of this block " Grid.Column="0"/>
+                                <TextBox Text="{Binding ProjectSelectedPlcBlock.ProgrammingLanguage, Mode=OneWay}" Grid.Column="1"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Content="Creation date of this Plc block: " Grid.Column="0"/>
+                                <TextBox Text="{Binding ProjectSelectedPlcBlock.CreationDate, Mode=OneWay}" Grid.Column="1"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Content="Last code modification date: " Grid.Column="0"/>
+                                <TextBox Text="{Binding ProjectSelectedPlcBlock.CodeModifiedDate, Mode=OneWay}" Grid.Column="1"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Content="Last interface modification: " Grid.Column="0"/>
+                                <TextBox Text="{Binding ProjectSelectedPlcBlock.InterfaceModifiedDate, Mode=OneWay}" Grid.Column="1"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Content="Date of the last structure modification: " Grid.Column="0"/>
+                                <TextBox Text="{Binding ProjectSelectedPlcBlock.StructureModified, Mode=OneWay}" Grid.Column="1"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Content="Last code modification date: " Grid.Column="0"/>
+                                <TextBox Text="{Binding ProjectSelectedPlcBlock.CompileDate, Mode=OneWay}" Grid.Column="1"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Content="Is consistent: " Grid.Column="0"/>
+                                <TextBox Text="{Binding ProjectSelectedPlcBlock.IsConsistent, Mode=OneWay}" Grid.Column="1"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Content="Is know-how: " Grid.Column="0"/>
+                                <TextBox Text="{Binding ProjectSelectedPlcBlock.IsKnowHowProtected, Mode=OneWay}" Grid.Column="1"/>
+                            </Grid>
+                            <Separator HorizontalAlignment="Stretch" Background="Green"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Button x:Name="btnProjectsExportBlock" Content="Export block" Grid.Column="0" Click="btnProjectsExportBlockClick" />
+                                <Button x:Name="btnProjectsExportFolder" Content="Select folder" Grid.Column="1" Click="btnProjectsExportFolderClikc"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Content="Export to: " Grid.Column="0"/>
+                                <TextBox Text="{Binding ExportFolder}" Grid.Column="1"/>
+                            </Grid>
+                            <Separator HorizontalAlignment="Stretch" Background="Green"/>
+                            
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Button x:Name="btnProjectsImportBlock" Content="Import block" Grid.Column="0" Click="btnProjectsImportBlockClick" />
+                                <Button x:Name="btnProjectsImportSelectFile" Content="Select file" Grid.Column="1" Click="btnProjectsImportSelectFileClikc"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Content="Import file: " Grid.Column="0"/>
+                                <TextBox Text="{Binding ImportFile}" Grid.Column="1"/>
+                            </Grid>
+
                         </StackPanel>
                         
+
 
                     </DockPanel>
 
@@ -332,10 +421,10 @@
                         <Label Content="No of proj: " Height="30" />
 
                         <TextBox Text="{Binding NrOfProjects}"  />
-                        <TextBox x:Name="textBoxProjectsDefaultProjectName" Text="{Binding CurrentProject.Path, Mode=OneWay}" />
+                        <TextBox x:Name="textBoxProjectsDefaultProjectName" Text="{Binding CurrentProject.Path, Mode=OneWay}" HorizontalAlignment="Stretch" />
 
                     </WrapPanel>
-                <!--</DockPanel>-->
+                    <!--</DockPanel>-->
                 </Grid>
             </TabItem>
 
