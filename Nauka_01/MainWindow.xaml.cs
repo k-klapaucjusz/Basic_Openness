@@ -329,11 +329,11 @@ namespace Basic_Openness
             _apiWrapper.DoCloseProject();
         }
 
-        private void btnProjectsTest1Click(object sender, RoutedEventArgs e)
-        {
-            Tests.DisplayCompositionInfos(_apiWrapper.TiaPortal.Projects.FirstOrDefault());
+        //private void btnProjectsTest1Click(object sender, RoutedEventArgs e)
+        //{
+        //    Tests.DisplayCompositionInfos(_apiWrapper.TiaPortal.Projects.FirstOrDefault());
 
-        }
+        //}
 
         private void btnProjectsTreeViewClick(object sender, RoutedEventArgs e)
         {
@@ -517,17 +517,38 @@ namespace Basic_Openness
             {
                 System.IO.FileInfo newFile = new System.IO.FileInfo(_apiWrapper.ExportFolder+@"\"+_apiWrapper.ProjectSelectedPlcBlock.Name+@".xml");
                 _apiWrapper.ProjectSelectedPlcBlock.Export(newFile , ExportOptions.None);
+                // gdy eksportowany plik już istnieje (albo tylko gdy istnieje i jest otwarty w jakimś edytorze - to muszę potwierdzić)
+                // to pojawia się wyjątke który trzeba obsłużyć. 
+                // Obsługa wyjątku ma polegać na wyświetleniu okienka z pytaniem czy nadpisać istniejący
+                //  - nadpisanie prawdopodobnie się nie uda bo plik jest już otwarty w innym programie
+                //  - wyświtlić komunikat, że nadpisanie jest niemożliwe. 
+                //  - jeśli będzie możliwe, to usunąć plik i spróbować ponownie exportować
             }
 
         }
 
         private void btnProjectsImportBlockClick(object sender, RoutedEventArgs e)
         {
+            string blockNames = "";
+            IList<PlcBlock> blocks = _apiWrapper.PlcSoftwares[0].BlockGroup.Blocks.Import(new System.IO.FileInfo(_apiWrapper.ImportFile), ImportOptions.Override);
+            foreach(var block in blocks)
+            {
+                blockNames += blockNames + ": "+ block.Name;
+            }
+            Console.WriteLine($"IMPORTED FILES LIST: {blockNames}");
 
         }
 
         private void btnProjectsImportSelectFileClikc(object sender, RoutedEventArgs e)
         {
+            Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
+            openFileDialog.Title = "Select file to import";
+            bool? result = openFileDialog.ShowDialog();
+            if (result == true)
+            {
+                Console.WriteLine($"IMPORT FILE: {openFileDialog.FileName}");
+                _apiWrapper.ImportFile = openFileDialog.FileName;
+            }
 
         }
     }

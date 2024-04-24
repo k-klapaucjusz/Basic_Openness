@@ -271,7 +271,7 @@
                         <Button x:Name="btnProjectsOpenProject" Content="Open project" Click="btnProjectsOpenProjectClick"/>
                         <Button x:Name="btnProjectsCloseProject" Content="Close project" Click="btnProjectsCloseProjectClick"/>
                         <Separator HorizontalAlignment="Stretch" Background="Red"/>
-                        <Button x:Name="btnProjectsTest1" Content="Test - GetCompositionInfos()" Click="btnProjectsTest1Click"/>
+                        <!--<Button x:Name="btnProjectsTest1" Content="Test - GetCompositionInfos()" Click="btnProjectsTest1Click"/>-->
                         <Button x:Name="btnProjectsTreeView" Content="Project tree" Click="btnProjectsTreeViewClick"/>
 
 
