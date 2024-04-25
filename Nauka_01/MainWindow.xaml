@@ -428,6 +428,27 @@
                 </Grid>
             </TabItem>
 
+            <TabItem Header="XML" >
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto" MinWidth="250"/>
+
+                    </Grid.ColumnDefinitions>
+
+                </Grid>
+
+                <DockPanel>
+                    
+                </DockPanel>
+
+
+            </TabItem>
+
 
 
 
