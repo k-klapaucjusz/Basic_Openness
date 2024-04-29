@@ -31,6 +31,7 @@ using Microsoft.Win32;
 using Basic_Openness.Models;
 using Siemens.Engineering.SW.Blocks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace Basic_Openness
 {
@@ -110,6 +111,7 @@ namespace Basic_Openness
         //private readonly ApiWrapper _apiWrapper;
         private readonly ProjectGeneratorService _projectGeneratorService;
         private readonly TraceWriter _traceWriter;
+        private XmlWrapper _xmlWrapper;
         #endregion
 
         //public int Licznik { get; private set; }
@@ -128,12 +130,14 @@ namespace Basic_Openness
             _traceWriter = new TraceWriter(lBoxTraceWriter);
             _apiWrapper = new ApiWrapper(_traceWriter);
             _projectGeneratorService = new ProjectGeneratorService(_traceWriter, _apiWrapper);
+            _xmlWrapper = new XmlWrapper();
             _apiWrapper.Licznik = 0;
             this.DataContext = _apiWrapper;     // tak też działa :) ale można też tak jak poniżej robić przypisanie do DataContext
             //dla poszczególnych zmiennych jak przy pierwszych próbach poniżej
             //tBoxLicznik.DataContext = _apiWrapper;
             //tBoxZapis.DataContext = _apiWrapper; // bez tej linii nie zadziała BINDING Text="{Binding iValue}" 
             // czyli tak na chłopski rozum trzeba wskazać klasę w której znajduje się iValue żeby binding w XAML zadziałał
+            tabItemXml.DataContext = _xmlWrapper;
 
             PrzygotujWiazanie(); // fragment przekopiowany z książki
             // zakładka Processes
@@ -550,6 +554,14 @@ namespace Basic_Openness
                 _apiWrapper.ImportFile = openFileDialog.FileName;
             }
 
+        }
+
+        private void btnXmlGenerateInterfaceClick(object sender, RoutedEventArgs e)
+        {
+            XElement section = new XElement("Interface"                );
+            _xmlWrapper.GeneratedXml = section.ToString();
+            //textBlockXmlGeneratedXml.Text = _xmlWrapper.GeneratedXml;
+            Console.WriteLine($"XML GENERATOR: {_xmlWrapper.GeneratedXml}");
         }
     }
 }

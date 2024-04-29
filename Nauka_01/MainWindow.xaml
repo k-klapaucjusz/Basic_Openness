@@ -391,7 +391,7 @@
                                 <TextBox Text="{Binding ExportFolder}" Grid.Column="1"/>
                             </Grid>
                             <Separator HorizontalAlignment="Stretch" Background="Green"/>
-                            
+
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -410,7 +410,7 @@
                             </Grid>
 
                         </StackPanel>
-                        
+
 
 
                     </DockPanel>
@@ -428,23 +428,76 @@
                 </Grid>
             </TabItem>
 
-            <TabItem Header="XML" >
+            <TabItem x:Name="tabItemXml" Header="XML" >
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto" MinWidth="250"/>
+                        <ColumnDefinition Width="Auto" MinWidth="300"/>
+                        <ColumnDefinition Width="*" MinWidth="300"/>
 
                     </Grid.ColumnDefinitions>
 
-                </Grid>
 
-                <DockPanel>
-                    
-                </DockPanel>
+                    <StackPanel Grid.Column="0" Grid.Row="0">
+                        <Button x:Name="btnXmlGenerateInterface" Content="Generate interface" Click="btnXmlGenerateInterfaceClick" />
+                        <Label Content="Interface: Temp"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" MinWidth="50" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" MinWidth="50" />
+                            </Grid.ColumnDefinitions>
+                            <Label Content="Name: " Grid.Column="0"/>
+                            <TextBox Text="{Binding InterfaceTempName}" Grid.Column="1"/>
+                            <Label Content="Datatype: " Grid.Column="2"/>
+                            <TextBox Text="{Binding InterfaceTempDatatype}" Grid.Column="3"/>
+                        </Grid>
+                        
+                        <Label Content="Interface: Static"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" MinWidth="50" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" MinWidth="50" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" MinWidth="50" />
+                            </Grid.ColumnDefinitions>
+                            <Label Content="Name: " Grid.Column="0"/>
+                            <TextBox Text="{Binding InterfaceStaticName}" Grid.Column="1"/>
+                            <Label Content="Data type: " Grid.Column="2"/>
+                            <TextBox Text="{Binding InterfaceStaticDatatype}" Grid.Column="3"/>
+                            <Label Content="Start value: " Grid.Column="4"/>
+                            <TextBox Text="{Binding InterfaceStaticStartValue}" Grid.Column="5"/>
+                        </Grid>
+
+                        <Label Content="Interface: Input"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" MinWidth="50" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" MinWidth="50" />
+                            </Grid.ColumnDefinitions>
+                            <Label Content="Name: " Grid.Column="0"/>
+                            <TextBox Text="{Binding InterfaceInputName}" Grid.Column="1"/>
+                            <Label Content="Datatype: " Grid.Column="2"/>
+                            <TextBox Text="{Binding InterfaceInputDatatype}" Grid.Column="3"/>
+                        </Grid>
+
+                    </StackPanel>
+
+                    <!--prawa strona okna--> 
+                    <StackPanel Grid.Column="1" Grid.Row="0">
+                        <Label Content="Generated XML"/>
+                        <TextBlock x:Name="textBlockXmlGeneratedXml" TextWrapping="Wrap" Text="{Binding GeneratedXml}"/>
+
+                    </StackPanel>
+                </Grid>
 
 
             </TabItem>

@@ -1,35 +1,61 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Basic_Openness
 {
-    public class XmlWrapper
+    public class XmlWrapper : INotifyPropertyChanged
     {
-        string InterfaceInputName { get; set; } = "";
-        string InterfaceInputDatatype { get; set; } = "";
 
-        string InterfaceOutputName { get; set; } = "";
-        string InterfaceOutputDatatype { get; set; } = "";
+        public event PropertyChangedEventHandler PropertyChanged;
 
-        string InterfaceStaticName { get; set; } = "";
-        string InterfaceStaticDatatype { get; set; } = "";
-        string InterfaceStaticStatrValue { get; set; } = "";
+
+        private string _generatedXml;
+        public string GeneratedXml {
+            get => _generatedXml;
+            set
+            {
+                if (value != _generatedXml)
+                {
+                    _generatedXml = value;
+                    NotifyPropertyChanged(nameof(GeneratedXml));
+                }
+            }
+        }
+        public string InterfaceInputName { get; set; } = "";
+        public string InterfaceInputDatatype { get; set; } = "";
+
+        public string InterfaceOutputName { get; set; } = "";
+        public string InterfaceOutputDatatype { get; set; } = "";
+
+        public string InterfaceStaticName { get; set; } = "";
+        public string InterfaceStaticDatatype { get; set; } = "";
+        public string InterfaceStaticStatrValue { get; set; } = "";
         
-        string InterfaceTempName { get; set; } = "";
-        string InterfaceTempDatatype { get; set; } = "";
+        public string InterfaceTempName { get; set; } = "";
+        public string InterfaceTempDatatype { get; set; } = "";
 
 
-        string StartValue { get; set; } = "";
-        string Comment { get; set; } = "";
+        public string StartValue { get; set; } = "";
+        public string Comment { get; set; } = "";
         Dictionary<string, string> Atributes { get; set; } = new Dictionary<string, string>() { 
             { "ExternalAccessible", "true" },
             { "ExternalVisible", "true" },
             {"ExternalWritable", "true" },
         };
 
+
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            
+
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
 
 
