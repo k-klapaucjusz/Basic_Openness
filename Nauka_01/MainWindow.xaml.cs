@@ -561,9 +561,19 @@ namespace Basic_Openness
             //XElement section = new XElement("Interface", new XAttribute("Atrybut", "hasiok"));
             //section.Add(new XElement("Sections", new XAttribute("xmlns", "http://www.siemens.com/automation/Openness/SW/Interface/v5")));
             //_xmlWrapper.GeneratedXml = section.ToString();
+
             XNamespace ns = "http://www.siemens.com/automation/Openness/SW/Interface/v5";
-            XElement section = new XElement(ns + "Interface", new XAttribute("Atrybut", "hasiok"));
+            XElement section = new XElement("Interface", new XAttribute("Atrybut", "hasiok"));
             section.Add(new XElement(ns + "Sections"));
+            //section.Elements("Section").Where - do nauki
+            
+
+            //XNamespace ns = "http://www.siemens.com/automation/Openness/SW/Interface/v5";
+            //XElement section = new XElement("Interface",
+            //    new XAttribute(XNamespace.Xmlns + "customPrefix", ns.NamespaceName),
+            //    new XAttribute("Atrybut", "hasiok"));
+            //section.Add(new XElement(ns + "Sections"));
+
             _xmlWrapper.GeneratedXml = section.ToString();
             //textBlockXmlGeneratedXml.Text = _xmlWrapper.GeneratedXml;
             Console.WriteLine($"XML GENERATOR: {_xmlWrapper.GeneratedXml}");
