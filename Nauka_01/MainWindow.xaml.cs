@@ -558,7 +558,12 @@ namespace Basic_Openness
 
         private void btnXmlGenerateInterfaceClick(object sender, RoutedEventArgs e)
         {
-            XElement section = new XElement("Interface"                );
+            //XElement section = new XElement("Interface", new XAttribute("Atrybut", "hasiok"));
+            //section.Add(new XElement("Sections", new XAttribute("xmlns", "http://www.siemens.com/automation/Openness/SW/Interface/v5")));
+            //_xmlWrapper.GeneratedXml = section.ToString();
+            XNamespace ns = "http://www.siemens.com/automation/Openness/SW/Interface/v5";
+            XElement section = new XElement(ns + "Interface", new XAttribute("Atrybut", "hasiok"));
+            section.Add(new XElement(ns + "Sections"));
             _xmlWrapper.GeneratedXml = section.ToString();
             //textBlockXmlGeneratedXml.Text = _xmlWrapper.GeneratedXml;
             Console.WriteLine($"XML GENERATOR: {_xmlWrapper.GeneratedXml}");
