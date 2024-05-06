@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Basic_Openness
 {
@@ -15,18 +16,22 @@ namespace Basic_Openness
         public event PropertyChangedEventHandler PropertyChanged;
 
 
-        private string _generatedXml;
-        public string GeneratedXml {
-            get => _generatedXml;
+        private string _generatedXmlAsString;
+        public string GeneratedXmlAsString {
+            get => _generatedXmlAsString;
             set
             {
-                if (value != _generatedXml)
+                if (value != _generatedXmlAsString)
                 {
-                    _generatedXml = value;
-                    NotifyPropertyChanged(nameof(GeneratedXml));
+                    _generatedXmlAsString = value;
+                    NotifyPropertyChanged(nameof(GeneratedXmlAsString));
                 }
             }
         }
+
+        public XElement GeneratedXml { get; set; }
+        public XNamespace NsInterface { get; set; } = "http://www.siemens.com/automation/Openness/SW/Interface/v5";
+
         public string InterfaceInputName { get; set; } = "";
         public string InterfaceInputDatatype { get; set; } = "";
 

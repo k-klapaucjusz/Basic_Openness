@@ -32,6 +32,7 @@ using Basic_Openness.Models;
 using Siemens.Engineering.SW.Blocks;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using Clipboard = System.Windows.Forms.Clipboard;
 
 namespace Basic_Openness
 {
@@ -563,10 +564,17 @@ namespace Basic_Openness
             //_xmlWrapper.GeneratedXml = section.ToString();
 
             XNamespace ns = "http://www.siemens.com/automation/Openness/SW/Interface/v5";
-            XElement section = new XElement("Interface", new XAttribute("Atrybut", "hasiok"));
-            section.Add(new XElement(ns + "Sections"));
+            XElement elementInterface = new XElement("Interface", new XAttribute("Atrybut", "hasiok"));
+            XElement elementSections = new XElement(_xmlWrapper.NsInterface + "Sections");
+            //XElement elementSections = new XElement("Sections");
+            elementInterface.Add(elementSections);
+            elementSections.Add(new XElement("Section", new XAttribute("Name", "Input")), new XElement("Section", new XAttribute("Name", "Output")),
+                 new XElement("Section", new XAttribute("Name", "InOut")), new XElement("Section", new XAttribute("Name", "Static")),
+                  new XElement("Section", new XAttribute("Name", "Temp")), new XElement("Section", new XAttribute("Name", "Constant")));
+
+
             //section.Elements("Section").Where - do nauki
-            
+
 
             //XNamespace ns = "http://www.siemens.com/automation/Openness/SW/Interface/v5";
             //XElement section = new XElement("Interface",
@@ -574,9 +582,36 @@ namespace Basic_Openness
             //    new XAttribute("Atrybut", "hasiok"));
             //section.Add(new XElement(ns + "Sections"));
 
-            _xmlWrapper.GeneratedXml = section.ToString();
+            //zapisanie wygenerowanego xml do publicznej właściwości (żeby można było dalej go modyfikować)
+            _xmlWrapper.GeneratedXml = elementInterface;
+            _xmlWrapper.GeneratedXmlAsString = elementInterface.ToString();
             //textBlockXmlGeneratedXml.Text = _xmlWrapper.GeneratedXml;
-            Console.WriteLine($"XML GENERATOR: {_xmlWrapper.GeneratedXml}");
+            Console.WriteLine($"XML GENERATOR: {_xmlWrapper.GeneratedXmlAsString}");
+        }
+
+        private void btnXmlCopyClick(object sender, RoutedEventArgs e)
+        {
+            Clipboard.SetText(_xmlWrapper.GeneratedXmlAsString);
+        }
+
+        
+
+        private void btnXmlGenerateTempClick(object sender, RoutedEventArgs e)
+        {
+            //XElement element = _xmlWrapper.GeneratedXml.Descendants("Section")
+            //    .FirstOrDefault(elem => elem.Attribute("Name")?.Value == "Temp");
+            XElement sectionTemp = _xmlWrapper.GeneratedXml.Elements(_xmlWrapper.NsInterface + "Sections").Elements("Section")
+                .FirstOrDefault(elem => elem.Attribute("Name")?.Value == "Temp");
+                //Descendants("Section")
+                //.FirstOrDefault(elem => elem.Attribute("Name")?.Value == "Temp");
+            if (sectionTemp != null)
+            {
+                XElement newTemp = new XElement("Member", new XAttribute("Name", _xmlWrapper.InterfaceTempName), new XAttribute("Datatype", _xmlWrapper.InterfaceTempDatatype));
+                sectionTemp.Add(newTemp);
+                _xmlWrapper.GeneratedXmlAsString = _xmlWrapper.GeneratedXml.ToString();
+            }
+            else Console.WriteLine("GENERATE TEMP - nie odnaleziono SECTION");
+
         }
     }
 }

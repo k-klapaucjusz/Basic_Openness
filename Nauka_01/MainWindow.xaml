@@ -456,7 +456,9 @@
                             <Label Content="Datatype: " Grid.Column="2"/>
                             <TextBox Text="{Binding InterfaceTempDatatype}" Grid.Column="3"/>
                         </Grid>
-                        
+                        <Button x:Name="btnXmlGenerateTemp" Content="Generate Temp" Click="btnXmlGenerateTempClick"/>
+
+                        <Separator HorizontalAlignment="Stretch" Background="Black"/>
                         <Label Content="Interface: Static"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -494,7 +496,8 @@
                     <!--prawa strona okna--> 
                     <StackPanel Grid.Column="1" Grid.Row="0">
                         <Label Content="Generated XML"/>
-                        <TextBlock x:Name="textBlockXmlGeneratedXml" TextWrapping="Wrap" Text="{Binding GeneratedXml}"/>
+                        <TextBlock x:Name="textBlockXmlGeneratedXml" TextWrapping="Wrap" Text="{Binding GeneratedXmlAsString}"/>
+                        <Button x:Name="btnXmlCopy" Content="Copy" Click="btnXmlCopyClick"/>
 
                     </StackPanel>
                 </Grid>
