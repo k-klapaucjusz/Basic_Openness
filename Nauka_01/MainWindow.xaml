@@ -433,6 +433,9 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
+                        <!--Auto - tworzy obiekt tak duży aby zmieściła się cała jego zawrtość.
+                                   Dla elementu z takim ustawieniem nie zadziała ScrollViewer ponieważ obikt może mieć nieskończony rozmiar
+                          * - obiekt zajmie całą dostępną wolną przestrzeń -->
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" MinWidth="300"/>
@@ -441,8 +444,22 @@
                     </Grid.ColumnDefinitions>
 
 
+
+
                     <StackPanel Grid.Column="0" Grid.Row="0">
                         <Button x:Name="btnXmlGenerateInterface" Content="Generate interface" Click="btnXmlGenerateInterfaceClick" />
+                        <Separator HorizontalAlignment="Stretch" Background="Black"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Button x:Name="btnXmlOpenFile2" Content="Open file" Click="btnXmlOpenFileClick2" Grid.Column="0" />
+                            <Button x:Name="btnXmlSaveFile2" Content="Save file" Click="btnXmlSaveFileClick2" Grid.Column="1"/>
+                        </Grid>
+                        <Separator HorizontalAlignment="Stretch" Background="Black" />
+
                         <Label Content="Interface: Temp"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -457,8 +474,8 @@
                             <TextBox Text="{Binding InterfaceTempDatatype}" Grid.Column="3"/>
                         </Grid>
                         <Button x:Name="btnXmlGenerateTemp" Content="Generate Temp" Click="btnXmlGenerateTempClick"/>
-
                         <Separator HorizontalAlignment="Stretch" Background="Black"/>
+
                         <Label Content="Interface: Static"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -476,7 +493,8 @@
                             <Label Content="Start value: " Grid.Column="4"/>
                             <TextBox Text="{Binding InterfaceStaticStartValue}" Grid.Column="5"/>
                         </Grid>
-
+                        <Button x:Name="btnXmlGenerateStatic" Content="Generate static" Click="btnXmlGenerateStaticClick"/>
+                        <Separator HorizontalAlignment="Stretch" Background="Black"/>
                         <Label Content="Interface: Input"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -490,16 +508,31 @@
                             <Label Content="Datatype: " Grid.Column="2"/>
                             <TextBox Text="{Binding InterfaceInputDatatype}" Grid.Column="3"/>
                         </Grid>
-
+                        <Button x:Name="btnXmlGenerateInput" Content="Generate input" Click="btnXmlGenerateInputClick"/>
+                        <Separator HorizontalAlignment="Stretch" Background="Black"/>
                     </StackPanel>
 
-                    <!--prawa strona okna--> 
-                    <StackPanel Grid.Column="1" Grid.Row="0">
-                        <Label Content="Generated XML"/>
-                        <TextBlock x:Name="textBlockXmlGeneratedXml" TextWrapping="Wrap" Text="{Binding GeneratedXmlAsString}"/>
-                        <Button x:Name="btnXmlCopy" Content="Copy" Click="btnXmlCopyClick"/>
+                    <!--prawa strona okna-->
+                    <DockPanel Grid.Column="1" Grid.Row="0" >
+                        <Grid >
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Label Grid.Row="0" Content="Generated XML" />
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible" PanningMode="Both">
 
-                    </StackPanel>
+                                <TextBlock  x:Name="textBlockXmlGeneratedXml" TextWrapping="NoWrap" Text="{Binding GeneratedXmlAsString}"
+                                            AllowDrop="False"/>
+
+                            </ScrollViewer>
+                            <Button Grid.Row="2" x:Name="btnXmlCopy" Content="Copy" Click="btnXmlCopyClick" />
+                        </Grid>
+                    </DockPanel>
+                    <DockPanel Grid.Column="1" Grid.Row="1" >
+                        <Label Grid.Row="0" Content="Generated XML" />
+                    </DockPanel>
                 </Grid>
 
 

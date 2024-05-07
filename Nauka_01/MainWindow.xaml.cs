@@ -564,13 +564,16 @@ namespace Basic_Openness
             //_xmlWrapper.GeneratedXml = section.ToString();
 
             XNamespace ns = "http://www.siemens.com/automation/Openness/SW/Interface/v5";
-            XElement elementInterface = new XElement("Interface", new XAttribute("Atrybut", "hasiok"));
+            XElement elementInterface = new XElement("Interface");
             XElement elementSections = new XElement(_xmlWrapper.NsInterface + "Sections");
             //XElement elementSections = new XElement("Sections");
             elementInterface.Add(elementSections);
-            elementSections.Add(new XElement("Section", new XAttribute("Name", "Input")), new XElement("Section", new XAttribute("Name", "Output")),
-                 new XElement("Section", new XAttribute("Name", "InOut")), new XElement("Section", new XAttribute("Name", "Static")),
-                  new XElement("Section", new XAttribute("Name", "Temp")), new XElement("Section", new XAttribute("Name", "Constant")));
+            elementSections.Add(new XElement(_xmlWrapper.NsInterface + "Section", new XAttribute("Name", "Input")), 
+                new XElement(_xmlWrapper.NsInterface + "Section", new XAttribute("Name", "Output")),
+                 new XElement(_xmlWrapper.NsInterface + "Section", new XAttribute("Name", "InOut")),
+                 new XElement(_xmlWrapper.NsInterface + "Section", new XAttribute("Name", "Static")),
+                  new XElement(_xmlWrapper.NsInterface + "Section", new XAttribute("Name", "Temp")), 
+                  new XElement(_xmlWrapper.NsInterface + "Section", new XAttribute("Name", "Constant")));
 
 
             //section.Elements("Section").Where - do nauki
@@ -598,20 +601,107 @@ namespace Basic_Openness
 
         private void btnXmlGenerateTempClick(object sender, RoutedEventArgs e)
         {
-            //XElement element = _xmlWrapper.GeneratedXml.Descendants("Section")
-            //    .FirstOrDefault(elem => elem.Attribute("Name")?.Value == "Temp");
-            XElement sectionTemp = _xmlWrapper.GeneratedXml.Elements(_xmlWrapper.NsInterface + "Sections").Elements("Section")
+            XElement interfaceSection = _xmlWrapper.GeneratedXml.Descendants(_xmlWrapper.NsInterface + "Sections").Elements(_xmlWrapper.NsInterface + "Section")
                 .FirstOrDefault(elem => elem.Attribute("Name")?.Value == "Temp");
-                //Descendants("Section")
-                //.FirstOrDefault(elem => elem.Attribute("Name")?.Value == "Temp");
-            if (sectionTemp != null)
+            //XElement interfaceSection = _xmlWrapper.GeneratedXml.Elements(_xmlWrapper.NsInterface + "Sections").Elements("Section")
+            //    .FirstOrDefault(elem => elem.Attribute("Name")?.Value == "Temp");
+            //Descendants("Section")
+            //.FirstOrDefault(elem => elem.Attribute("Name")?.Value == "Temp");
+            if (interfaceSection != null)
             {
-                XElement newTemp = new XElement("Member", new XAttribute("Name", _xmlWrapper.InterfaceTempName), new XAttribute("Datatype", _xmlWrapper.InterfaceTempDatatype));
-                sectionTemp.Add(newTemp);
+                XElement newMember = new XElement(_xmlWrapper.NsInterface + "Member", new XAttribute("Name", _xmlWrapper.InterfaceTempName), new XAttribute("Datatype", _xmlWrapper.InterfaceTempDatatype));
+                interfaceSection.Add(newMember);
+                _xmlWrapper.GeneratedXmlAsString = _xmlWrapper.GeneratedXml.ToString();
+                Console.WriteLine($"GENERATE TEMP: newMember: {newMember.ToString()}");
+            }
+            else Console.WriteLine($"GENERATE TEMP - nie odnaleziono SECTION, {_xmlWrapper.GeneratedXml.Elements().Count()}, {_xmlWrapper.GeneratedXml.Elements().Elements().FirstOrDefault().Name}");
+
+        }
+
+        private void btnXmlGenerateStaticClick(object sender, RoutedEventArgs e)
+        {
+            XElement interfaceSection = _xmlWrapper.GeneratedXml.Descendants(_xmlWrapper.NsInterface + "Sections").Elements(_xmlWrapper.NsInterface + "Section")
+                .FirstOrDefault(elem => elem.Attribute("Name")?.Value == "Static");
+            
+            if (interfaceSection != null)
+            {
+                XElement newMember = new XElement(_xmlWrapper.NsInterface + "Member", new XAttribute("Name", _xmlWrapper.InterfaceStaticName), new XAttribute("Datatype", _xmlWrapper.InterfaceStaticDatatype));
+                interfaceSection.Add(newMember);
                 _xmlWrapper.GeneratedXmlAsString = _xmlWrapper.GeneratedXml.ToString();
             }
-            else Console.WriteLine("GENERATE TEMP - nie odnaleziono SECTION");
+            else Console.WriteLine("GENERATE STATIC - nie odnaleziono SECTION");
 
+        }
+
+        private void btnXmlGenerateInputClick(object sender, RoutedEventArgs e)
+        {
+            XElement interfaceSection = _xmlWrapper.GeneratedXml.Descendants(_xmlWrapper.NsInterface + "Sections").Elements(_xmlWrapper.NsInterface + "Section")
+                .FirstOrDefault(elem => elem.Attribute("Name")?.Value == "Input");
+
+            if (interfaceSection != null)
+            {
+                XElement newMember = new XElement(_xmlWrapper.NsInterface + "Member", new XAttribute("Name", _xmlWrapper.InterfaceInputName), new XAttribute("Datatype", _xmlWrapper.InterfaceInputDatatype));
+                interfaceSection.Add(newMember);
+                _xmlWrapper.GeneratedXmlAsString = _xmlWrapper.GeneratedXml.ToString();
+            }
+            else Console.WriteLine("GENERATE STATIC - nie odnaleziono SECTION");
+        }
+
+        //private void btnXmlOpenFileClick(object sender, RoutedEventArgs e)
+        //{
+        //    _xmlWrapper.XmlOpenFileDialog = new Microsoft.Win32.OpenFileDialog();
+        //    _xmlWrapper.XmlOpenFileDialog.Title = "Select xml file to edit";
+        //    bool? result = _xmlWrapper.XmlOpenFileDialog.ShowDialog();
+        //    if (result == true)
+        //    {
+        //        Console.WriteLine($"XML - OPEN FILE: {_xmlWrapper.XmlOpenFileDialog.FileName}");
+        //        _xmlWrapper.XmlFile = XDocument.Load(_xmlWrapper.XmlOpenFileDialog.FileName);
+        //        //Console.WriteLine($"OPEN XML FILE - NODE ENGINEERING: {_xmlWrapper.XmlFile.Descendants("Engineering").FirstOrDefault().ToString()}");
+        //        _xmlWrapper.GeneratedXml = _xmlWrapper.XmlFile.Descendants("Interface")?.FirstOrDefault();
+        //        //Console.WriteLine($"OPEN XML FILE - NODE INTERFACE: {_xmlWrapper.XmlFile.Descendants("Interface").Count()}");
+        //        //Console.WriteLine($"OPEN XML FILE - NODE INTERFACE: {_xmlWrapper.GeneratedXml}");
+        //        _xmlWrapper.GeneratedXmlAsString = _xmlWrapper.GeneratedXml.ToString();
+        //    }
+        //    else Console.WriteLine("OPEN XML FILE - coś poszło nie tak");
+
+        //}
+
+        //private void btnXmlSaveFileClick(object sender, RoutedEventArgs e)
+        //{
+        //    if (_xmlWrapper.XmlOpenFileDialog != null && _xmlWrapper.XmlFile != null)
+        //    {
+        //        _xmlWrapper.XmlFile.Save(_xmlWrapper.XmlOpenFileDialog.FileName);
+        //    }
+        //    else Console.WriteLine("SAVE XML FILE - coś poszło nie tak");
+
+        //}
+
+        private void btnXmlOpenFileClick2(object sender, RoutedEventArgs e)
+        {
+            _xmlWrapper.XmlOpenFileDialog = new Microsoft.Win32.OpenFileDialog();
+            _xmlWrapper.XmlOpenFileDialog.Title = "Select xml file to edit";
+            bool? result = _xmlWrapper.XmlOpenFileDialog.ShowDialog();
+            if (result == true)
+            {
+                Console.WriteLine($"XML - OPEN FILE: {_xmlWrapper.XmlOpenFileDialog.FileName}");
+                _xmlWrapper.XmlFile = XDocument.Load(_xmlWrapper.XmlOpenFileDialog.FileName);
+                //Console.WriteLine($"OPEN XML FILE - NODE ENGINEERING: {_xmlWrapper.XmlFile.Descendants("Engineering").FirstOrDefault().ToString()}");
+                _xmlWrapper.GeneratedXml = _xmlWrapper.XmlFile.Descendants("Interface")?.FirstOrDefault();
+                //Console.WriteLine($"OPEN XML FILE - NODE INTERFACE: {_xmlWrapper.XmlFile.Descendants("Interface").Count()}");
+                //Console.WriteLine($"OPEN XML FILE - NODE INTERFACE: {_xmlWrapper.GeneratedXml}");
+                _xmlWrapper.GeneratedXmlAsString = _xmlWrapper.GeneratedXml.ToString();
+            }
+            else Console.WriteLine("OPEN XML FILE - coś poszło nie tak");
+
+        }
+
+        private void btnXmlSaveFileClick2(object sender, RoutedEventArgs e)
+        {
+            if (_xmlWrapper.XmlOpenFileDialog != null && _xmlWrapper.XmlFile != null)
+            {
+                _xmlWrapper.XmlFile.Save(_xmlWrapper.XmlOpenFileDialog.FileName);
+            }
+            else Console.WriteLine("SAVE XML FILE - coś poszło nie tak");
         }
     }
 }

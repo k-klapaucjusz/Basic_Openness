@@ -31,6 +31,8 @@ namespace Basic_Openness
 
         public XElement GeneratedXml { get; set; }
         public XNamespace NsInterface { get; set; } = "http://www.siemens.com/automation/Openness/SW/Interface/v5";
+        public XDocument XmlFile { get; set; }
+        public Microsoft.Win32.OpenFileDialog XmlOpenFileDialog { get; set; }
 
         public string InterfaceInputName { get; set; } = "";
         public string InterfaceInputDatatype { get; set; } = "";
