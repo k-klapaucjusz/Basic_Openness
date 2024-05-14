@@ -29,7 +29,7 @@ namespace Basic_Openness
         {
             //XNamespace ns = "http://www.siemens.com/automation/Openness/SW/Interface/v5";
             XElement interfaceSection = new XElement(ns + "Interface",
-                new XElement(ns + "Sections", data.Sections.Select(section => GenerateSection(section, ns)))
+                new XElement(ns + "Sections", data.Sections.Select(section => GenerateSection(section)))
             );
             return interfaceSection;
         }
@@ -39,19 +39,19 @@ namespace Basic_Openness
         {
             XElement sectionElement = new XElement(ns + "Section",
                 new XAttribute("Name", section.Name),
-                section.Members.Select(member => GenerateMember(member, ns))
+                section.Members.Select(member => GenerateMember(member))
             );
             return sectionElement;
         }
 
         // Metoda generująca elementy Member
-        private XElement GenerateMember(MemberData member)
+        private XElement GenerateMember(MemberData member, string memberType = null) // od tej modyfikacji zacząć
         {
             XElement memberElement = new XElement(ns + "Member",
                 new XAttribute("Name", member.Name),
                 new XAttribute("Datatype", member.DataType),
-                member.Comment != null ? new XElement(ns + "Comment", GenerateMultiLanguageText(member.Comment, ns)) : null,
-                member.Attributes != null ? new XElement(ns + "AttributeList", member.Attributes.Select(attr => GenerateBooleanAttribute(attr, ns))) : null,
+                member.Comment != null ? new XElement(ns + "Comment", GenerateMultiLanguageText(member.Comment)) : null,
+                member.Attributes != null ? new XElement(ns + "AttributeList", member.Attributes.Select(attr => GenerateBooleanAttribute(attr))) : null,
                 member.StartValue != null ? new XElement(ns + "StartValue", member.StartValue) : null
             );
             return memberElement;
@@ -84,6 +84,8 @@ namespace Basic_Openness
             memberData.Comment.Language = language;
             memberData.Attributes = null;
             memberData.StartValue = null;
+            memberData.IsRetain = null;
+            memberData.IsSetPoint = null;
         return GenerateMember(memberData);
         }
         private XElement CreateConstant(string name, string datatype, string startValue = null, string comment = null, string language = "en-US")
@@ -95,13 +97,53 @@ namespace Basic_Openness
             memberData.Comment.Language = language;
             memberData.Attributes = null;
             memberData.StartValue = startValue;
+            memberData.IsRetain = null;
+            memberData.IsSetPoint = null;
             return GenerateMember(memberData);
         }
 
-        private XElement CreateInput(); //dokończyć
+        private XElement CreateInput(string name, string datatype, string startValue = null, string isRetain = null, string comment = null, string language = "en-US", 
+            List<BooleanAttribute> booleanAttribute = null) //dokończyć
+        {
+            MemberData memberData = new MemberData();
+            memberData.Name = name;
+            memberData.DataType = datatype;
+            memberData.Comment.Value = comment;
+            memberData.Comment.Language = language;
+            memberData.Attributes = null;
+            memberData.StartValue = startValue;
+            memberData.IsRetain = isRetain;
+            memberData.IsSetPoint = null;
+            return GenerateMember(memberData);
+        }
 
+        private XElement CreateOutput(string name, string datatype, string startValue = null, string isRetain = null, string comment = null, string language = "en-US",
+            List<BooleanAttribute> booleanAttribute = null)
+        {
+            return CreateInput(name, datatype, startValue, isRetain, comment, language, booleanAttribute);
+        }
 
-    }
+        private XElement CreateInOut(string name, string datatype, string startValue = null, string isRetain = null, string comment = null, string language = "en-US",
+            List<BooleanAttribute> booleanAttribute = null)
+        {
+            return CreateInput(name, datatype, startValue, isRetain, comment, language, booleanAttribute);
+        }
+        private XElement CreateStatic(string name, string datatype, string startValue = null, string isRetain = null, string comment = null, string isSetPoint = null,
+            string language = "en-US", List<BooleanAttribute> booleanAttribute = null) //dokończyć
+        {
+            MemberData memberData = new MemberData();
+            memberData.Name = name;
+            memberData.DataType = datatype;
+            memberData.Comment.Value = comment;
+            memberData.Comment.Language = language;
+            memberData.Attributes = null;
+            memberData.StartValue = startValue;
+            memberData.IsRetain = isRetain;
+            memberData.IsSetPoint = isSetPoint;
+            return GenerateMember(memberData);
+        }
+
+        }
 
     // Klasy danych
     public class InterfaceData
@@ -117,11 +159,14 @@ namespace Basic_Openness
 
     public class MemberData
     {
+        public string MemberType { get; set; }
         public string Name { get; set; }
         public string DataType { get; set; }
         public MultiLanguageText Comment { get; set; }
         public List<BooleanAttribute> Attributes { get; set; }
         public string StartValue { get; set; }
+        public string IsRetain { get; set; }
+        public string IsSetPoint { get; set; }
     }
 
     public class MultiLanguageText

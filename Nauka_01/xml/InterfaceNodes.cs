@@ -25,4 +25,21 @@ namespace Basic_Openness
         public const string ProgrammingLanguage = "ProgrammingLanguage";
         public const string SetENOAutomatically = "SetENOAutomatically";
     }
+    public static class MemberType
+    {
+        public const string Input = "Input";
+        public const string Output = "Output";
+        public const string InOut = "InOut";
+        public const string Static = "Static";
+        public const string Temp = "Temp";
+        public const string Constans = "Constans";
+    }
+
+    public static class Remanence
+    {
+        public const string None = null;
+        public const string Retain = "Retain";
+        public const string SetInIDB = "SetInIDB";
+
+    }
 }
