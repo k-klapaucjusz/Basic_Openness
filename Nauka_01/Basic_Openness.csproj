@@ -92,6 +92,7 @@
     <Compile Include="xml\hasiok.cs" />
     <Compile Include="xml\InterfaceNodes.cs" />
     <Compile Include="xml\InterfaceGenerator.cs" />
+    <Compile Include="xml\SclWrapper.cs" />
     <Compile Include="xml\XmlTest01.cs" />
     <Compile Include="xml\XmlWrapper.cs" />
     <Compile Include="Zadanie.cs" />
