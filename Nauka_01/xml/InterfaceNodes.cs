@@ -25,6 +25,21 @@ namespace Basic_Openness
         public const string ProgrammingLanguage = "ProgrammingLanguage";
         public const string SetENOAutomatically = "SetENOAutomatically";
     }
+    internal static class SclNodes
+    {
+        public const string Access = @"Access";
+        public const string Blank = @"Blank";
+        public const string NewLine = @"NewLine";
+        public const string Token = @"Token";
+        public const string Call = @"CallInfo";
+        public const string Instance = @"Instance";
+        public const string Symbol = @"Symbol";
+        public const string Component = @"Component";
+        public const string Constant = @"Constant";
+        public const string Parameter = @"Parameter";
+
+
+    }
     public static class OperandType
     {
         public const string Input = "Input";
@@ -35,6 +50,7 @@ namespace Basic_Openness
         public const string Constant = "Constant";
         public const string GlobalVariable = "GlobalVariable";
         public const string LiteralConstant = "LiteralConstant";
+        public const string LocalVariable = "LocalVariable";
     }
 
     public static class Remanence
