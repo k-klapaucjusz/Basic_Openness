@@ -36,7 +36,12 @@ namespace Basic_Openness
         public const string Symbol = @"Symbol";
         public const string Component = @"Component";
         public const string Constant = @"Constant";
+        public const string ConstantValue = "ConstantValue";
         public const string Parameter = @"Parameter";
+        public const string Name = @"Name";
+        public const string Scope = @"Scope";
+        public const string UId = @"UId";
+        public const string Text = "Text";
 
 
     }
@@ -69,6 +74,8 @@ namespace Basic_Openness
         public const string BracketR = @")";
         public const string EndOfExpr = @";";
         public const string Dot = @".";
+        public const string Region = "REGION";
+        public const string EndRegion = "END_REGION";
 
         // Arythmetical Operators
         public const string Add = @"+";

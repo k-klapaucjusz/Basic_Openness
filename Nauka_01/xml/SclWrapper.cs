@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -14,11 +17,16 @@ namespace Basic_Openness
 
         public SclWrapper()
         {
-            ns = null;
+            this.ns = null;
+            _uid = 21;
         }
-        public SclWrapper(XNamespace ns)
+        public SclWrapper(XNamespace ns): this() 
         {
             this.ns = ns;
+        }
+        public SclWrapper(XNamespace ns, int uid) : this(ns)
+        {
+            this._uid = uid;
         }
 
         public class SclAssignment
@@ -34,20 +42,69 @@ namespace Basic_Openness
 
 
         }
-        public interface ISclSyntax { }
-
-        public class LiteralCost : ISclSyntax
+        public interface ISclSyntax
         {
-            public string Value { get; set; }
-            public const string DataType = "LiteralConstant";
+            //string MemoryType { get; set; }
         }
 
-        public class Operand : ISclSyntax
+        public class LiteralConst : ISclSyntax
+        {
+            private string _value;
+            public string Value
+            {
+                get => _value;
+                set
+                {
+                    if (IsValidNumber(value))
+                    {
+                        _value = value;
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Value must be a valid number.");
+                    }
+                }
+            }
+            public LiteralConst() { }
+
+            public LiteralConst(string value)
+            {
+                Value = value;
+            }
+            public LiteralConst(int value)
+            {
+                Value = value.ToString();
+            }
+            public LiteralConst(double value)
+            {
+                Value = value.ToString();
+            }
+
+
+            public string MemoryType { get; } = "LiteralConstant";
+
+            private bool IsValidNumber(string value)
+            {
+                // Sprawdzenie czy string można skonwertować do liczby całkowitej
+                if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
+                {
+                    return true;
+                }
+
+                // Sprawdzenie czy string można skonwertować do liczby rzeczywistej
+                return double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out _);
+            }
+
+
+
+        }
+
+        public class Operand : LiteralConst
         {
             // mniej więcej taka zawartość, punkt wyjścia
-            public string MemberType { get; set; }
+            public string Type { get; set; }
             public string Name { get; set; }
-            public string DataType { get; set; }
+            public new string MemoryType { get; set; }
             public MultiLanguageText Comment { get; set; }
             public List<BooleanAttribute> Attributes { get; set; }
             public string StartValue { get; set; }
@@ -58,32 +115,118 @@ namespace Basic_Openness
 
         public class SclToken : ISclSyntax
         {
-            public string Value { get; set; }
+            private string _value;
+            public string Value
+            {
+                get => _value;
+                set
+                {
+                    if (IsValidToken(value))
+                    {
+                        _value = value;
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Value must be a valid token.");
+                    }
+                }
+            }
+            public bool IsValidToken(string token)
+            {
+                // Get all fields from the Token class
+                var fields = typeof(Token).GetFields(BindingFlags.Public | BindingFlags.Static);
+
+                // Check if any field value equals the checkString
+                return fields.Any(field => (string)field.GetValue(null) == token);
+            }
         }
         //public class SclOperand : ISclSyntax
         //{
         //    public string Value { get; set; }
         //}
-        
-        public XElement SclAccess(Operand operand)
+
+
+
+        public XElement SclGenerateAccess(Operand operand)
         {
             string[] localOperand =
             {
                 OperandType.Input, OperandType.Output, OperandType.InOut, OperandType.Static, OperandType.Temp, OperandType.Constant
             };
-            XElement accessElement;
+            //XElement accessElement;
 
-            if (localOperand.Contains(operand.MemberType)) {
-                accessElement = new XElement(SclNodes.Access, new XAttribute("Scope", OperandType.LocalVariable), new XAttribute("UId", _uid++.ToString())) ;
+            bool isLocal = localOperand.Contains(operand.Type);
+            bool isGlobal = operand.MemoryType == OperandType.GlobalVariable;
 
-                        }
-            else if(operand.MemberType == OperandType.LiteralConstant)
+            if (isLocal || isGlobal)
             {
-                // uzupełnić tutaj kod
+                //accessElement = new XElement(SclNodes.Access, new XAttribute("Scope", OperandType.LocalVariable), new XAttribute("UId", _uid++.ToString())) ;
+                string scope = null;
+                if (isLocal || !isGlobal)
+                    scope = OperandType.LocalVariable;
+                else if (!isLocal || isGlobal)
+                    scope = OperandType.GlobalVariable;
+                else Console.WriteLine("ERROR in SclGenerateAccess(): global / local missmatch !!!");
+
+
+                string[] parts = operand.Name.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
+
+                XElement accessElement = new XElement("Access",
+                    new XAttribute(SclNodes.Scope, scope),
+                    new XAttribute(SclNodes.UId, _uid++)
+                );
+
+                XElement symbolElement = new XElement(SclNodes.Symbol,
+                    new XAttribute(SclNodes.UId, _uid++)
+                );
+
+                SclGenerateComponents(symbolElement, parts, ref _uid);
+
+                accessElement.Add(symbolElement);
+                return accessElement;
+
+            }
+            else if (operand.MemoryType == OperandType.LiteralConstant)
+            {
+                XElement accessElement = new XElement(SclNodes.Access,
+                    new XAttribute(SclNodes.Scope, OperandType.LiteralConstant),
+                    new XAttribute(SclNodes.UId, _uid++));
+
+                XElement constantElement = new XElement(SclNodes.Constant,
+                    new XAttribute(SclNodes.UId, _uid++));
+
+                XElement constantValueElement = new XElement(SclNodes.ConstantValue,
+                    new XAttribute(SclNodes.UId, _uid++), operand.Value);
+
+                constantElement.Add(constantValueElement);
+                accessElement.Add(constantElement);
+                return accessElement;
+            }
+            else
+            {
+                Console.WriteLine("ERROR in SclGenerateAccess(): no global or local or literal constant");
+                return null;
             }
 
+        }
 
-            return new XElement("hasiok");
+        private void SclGenerateComponents(XElement symbolElement, string[] parts, ref int uid)
+        {
+            foreach (string part in parts)
+            {
+                symbolElement.Add(new XElement(SclNodes.Component,
+                    new XAttribute(SclNodes.Name, part),
+                    new XAttribute(SclNodes.UId, uid++)
+                ));
+
+                if (part != parts.Last())
+                {
+                    symbolElement.Add(new XElement(SclNodes.Token,
+                        new XAttribute(SclNodes.Text, Token.Dot),
+                        new XAttribute(SclNodes.UId, uid++)
+                    ));
+                }
+            }
         }
 
     }
