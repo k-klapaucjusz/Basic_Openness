@@ -33,6 +33,7 @@ using Siemens.Engineering.SW.Blocks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using Clipboard = System.Windows.Forms.Clipboard;
+using static Basic_Openness.SclWrapper;
 
 namespace Basic_Openness
 {
@@ -45,67 +46,11 @@ namespace Basic_Openness
         //pierwsze testy 
         private ApiWrapper_test _apiWrapper_test = new ApiWrapper_test();
         private TiaPortalMode _tiaPortalMode;
+        private SclWrapper _sclWrapper;
         //ppierwsze testy
 
 
-        //#region properties
 
-        //public TiaPortalProcess CurrentTiaPortalProcess
-        //{
-        //    get;
-        //    set;
-        //}
-
-        //public TiaPortal TiaPortal
-        //{
-        //    get;
-        //    set;
-        //}
-
-        //public bool TiaPortalIsDisposed
-        //{
-        //    get;
-        //    set;
-        //}
-
-        //public bool IsModified
-        //{
-        //    get;
-        //    set;
-        //}
-
-        //public Project CurrentProject
-        //{
-        //    get;
-        //    set;
-        //}
-
-        //public Project AvailableProject
-        //{
-        //    get;
-        //    set;
-        //}
-
-        //public TiaPortalMode TiaPortalMode
-        //{
-        //    get => _tiaPortalMode;
-        //    set
-        //    {
-        //        if (value != _tiaPortalMode)
-        //        {
-        //            _tiaPortalMode = value;
-        //            //NotifyPropertyChanged();
-        //        }
-        //    }
-        //}
-
-        //public Device Device
-        //{
-        //    get;
-        //    set;
-        //}
-
-        //#endregion // properties
 
         #region fields
         private ApiWrapper _apiWrapper;
@@ -132,6 +77,7 @@ namespace Basic_Openness
             _apiWrapper = new ApiWrapper(_traceWriter);
             _projectGeneratorService = new ProjectGeneratorService(_traceWriter, _apiWrapper);
             _xmlWrapper = new XmlWrapper();
+            _sclWrapper = new SclWrapper("http://www.siemens.com/automation/Openness/SW/NetworkSource/StructuredText/v3");
             _apiWrapper.Licznik = 0;
             this.DataContext = _apiWrapper;     // tak też działa :) ale można też tak jak poniżej robić przypisanie do DataContext
             //dla poszczególnych zmiennych jak przy pierwszych próbach poniżej
@@ -587,14 +533,14 @@ namespace Basic_Openness
 
             //zapisanie wygenerowanego xml do publicznej właściwości (żeby można było dalej go modyfikować)
             _xmlWrapper.GeneratedXml = elementInterface;
-            _xmlWrapper.GeneratedXmlAsString = elementInterface.ToString();
+            _xmlWrapper.RootElementAsString = elementInterface.ToString();
             //textBlockXmlGeneratedXml.Text = _xmlWrapper.GeneratedXml;
-            Console.WriteLine($"XML GENERATOR: {_xmlWrapper.GeneratedXmlAsString}");
+            Console.WriteLine($"XML GENERATOR: {_xmlWrapper.RootElementAsString}");
         }
 
         private void btnXmlCopyClick(object sender, RoutedEventArgs e)
         {
-            Clipboard.SetText(_xmlWrapper.GeneratedXmlAsString);
+            Clipboard.SetText(_xmlWrapper.RootElementAsString);
         }
 
         
@@ -611,7 +557,7 @@ namespace Basic_Openness
             {
                 XElement newMember = new XElement(_xmlWrapper.NsInterface + "Member", new XAttribute("Name", _xmlWrapper.InterfaceTempName), new XAttribute("Datatype", _xmlWrapper.InterfaceTempDatatype));
                 interfaceSection.Add(newMember);
-                _xmlWrapper.GeneratedXmlAsString = _xmlWrapper.GeneratedXml.ToString();
+                _xmlWrapper.RootElementAsString = _xmlWrapper.GeneratedXml.ToString();
                 Console.WriteLine($"GENERATE TEMP: newMember: {newMember.ToString()}");
             }
             else Console.WriteLine($"GENERATE TEMP - nie odnaleziono SECTION, {_xmlWrapper.GeneratedXml.Elements().Count()}, {_xmlWrapper.GeneratedXml.Elements().Elements().FirstOrDefault().Name}");
@@ -625,9 +571,11 @@ namespace Basic_Openness
             
             if (interfaceSection != null)
             {
-                XElement newMember = new XElement(_xmlWrapper.NsInterface + "Member", new XAttribute("Name", _xmlWrapper.InterfaceStaticName), new XAttribute("Datatype", _xmlWrapper.InterfaceStaticDatatype));
+                XElement newMember = new XElement(_xmlWrapper.NsInterface + "Member", 
+                    new XAttribute("Name", _xmlWrapper.InterfaceStaticName), 
+                    new XAttribute("Datatype", _xmlWrapper.InterfaceStaticDatatype));
                 interfaceSection.Add(newMember);
-                _xmlWrapper.GeneratedXmlAsString = _xmlWrapper.GeneratedXml.ToString();
+                _xmlWrapper.RootElementAsString = _xmlWrapper.GeneratedXml.ToString();
             }
             else Console.WriteLine("GENERATE STATIC - nie odnaleziono SECTION");
 
@@ -635,46 +583,22 @@ namespace Basic_Openness
 
         private void btnXmlGenerateInputClick(object sender, RoutedEventArgs e)
         {
-            XElement interfaceSection = _xmlWrapper.GeneratedXml.Descendants(_xmlWrapper.NsInterface + "Sections").Elements(_xmlWrapper.NsInterface + "Section")
+            XElement interfaceSection = _xmlWrapper.GeneratedXml.Descendants(_xmlWrapper.NsInterface + "Sections")
+                .Elements(_xmlWrapper.NsInterface + "Section")
                 .FirstOrDefault(elem => elem.Attribute("Name")?.Value == "Input");
 
             if (interfaceSection != null)
             {
-                XElement newMember = new XElement(_xmlWrapper.NsInterface + "Member", new XAttribute("Name", _xmlWrapper.InterfaceInputName), new XAttribute("Datatype", _xmlWrapper.InterfaceInputDatatype));
+                XElement newMember = new XElement(_xmlWrapper.NsInterface + "Member", 
+                    new XAttribute("Name", _xmlWrapper.InterfaceInputName), 
+                    new XAttribute("Datatype", _xmlWrapper.InterfaceInputDatatype));
                 interfaceSection.Add(newMember);
-                _xmlWrapper.GeneratedXmlAsString = _xmlWrapper.GeneratedXml.ToString();
+                _xmlWrapper.RootElementAsString = _xmlWrapper.GeneratedXml.ToString();
             }
             else Console.WriteLine("GENERATE STATIC - nie odnaleziono SECTION");
         }
 
-        //private void btnXmlOpenFileClick(object sender, RoutedEventArgs e)
-        //{
-        //    _xmlWrapper.XmlOpenFileDialog = new Microsoft.Win32.OpenFileDialog();
-        //    _xmlWrapper.XmlOpenFileDialog.Title = "Select xml file to edit";
-        //    bool? result = _xmlWrapper.XmlOpenFileDialog.ShowDialog();
-        //    if (result == true)
-        //    {
-        //        Console.WriteLine($"XML - OPEN FILE: {_xmlWrapper.XmlOpenFileDialog.FileName}");
-        //        _xmlWrapper.XmlFile = XDocument.Load(_xmlWrapper.XmlOpenFileDialog.FileName);
-        //        //Console.WriteLine($"OPEN XML FILE - NODE ENGINEERING: {_xmlWrapper.XmlFile.Descendants("Engineering").FirstOrDefault().ToString()}");
-        //        _xmlWrapper.GeneratedXml = _xmlWrapper.XmlFile.Descendants("Interface")?.FirstOrDefault();
-        //        //Console.WriteLine($"OPEN XML FILE - NODE INTERFACE: {_xmlWrapper.XmlFile.Descendants("Interface").Count()}");
-        //        //Console.WriteLine($"OPEN XML FILE - NODE INTERFACE: {_xmlWrapper.GeneratedXml}");
-        //        _xmlWrapper.GeneratedXmlAsString = _xmlWrapper.GeneratedXml.ToString();
-        //    }
-        //    else Console.WriteLine("OPEN XML FILE - coś poszło nie tak");
 
-        //}
-
-        //private void btnXmlSaveFileClick(object sender, RoutedEventArgs e)
-        //{
-        //    if (_xmlWrapper.XmlOpenFileDialog != null && _xmlWrapper.XmlFile != null)
-        //    {
-        //        _xmlWrapper.XmlFile.Save(_xmlWrapper.XmlOpenFileDialog.FileName);
-        //    }
-        //    else Console.WriteLine("SAVE XML FILE - coś poszło nie tak");
-
-        //}
 
         private void btnXmlOpenFileClick2(object sender, RoutedEventArgs e)
         {
@@ -687,9 +611,11 @@ namespace Basic_Openness
                 _xmlWrapper.XmlFile = XDocument.Load(_xmlWrapper.XmlOpenFileDialog.FileName);
                 //Console.WriteLine($"OPEN XML FILE - NODE ENGINEERING: {_xmlWrapper.XmlFile.Descendants("Engineering").FirstOrDefault().ToString()}");
                 _xmlWrapper.GeneratedXml = _xmlWrapper.XmlFile.Descendants("Interface")?.FirstOrDefault();
+                _xmlWrapper.RootElementXml = _xmlWrapper.XmlFile.Root;
+
                 //Console.WriteLine($"OPEN XML FILE - NODE INTERFACE: {_xmlWrapper.XmlFile.Descendants("Interface").Count()}");
                 //Console.WriteLine($"OPEN XML FILE - NODE INTERFACE: {_xmlWrapper.GeneratedXml}");
-                _xmlWrapper.GeneratedXmlAsString = _xmlWrapper.GeneratedXml.ToString();
+                _xmlWrapper.RootElementAsString = _xmlWrapper.RootElementXml.ToString();
             }
             else Console.WriteLine("OPEN XML FILE - coś poszło nie tak");
 
@@ -702,6 +628,36 @@ namespace Basic_Openness
                 _xmlWrapper.XmlFile.Save(_xmlWrapper.XmlOpenFileDialog.FileName);
             }
             else Console.WriteLine("SAVE XML FILE - coś poszło nie tak");
+        }
+
+        private void btnXmlGenerateAssignmentClick(object sender, RoutedEventArgs e)
+        {
+            Operand operand1 = new Operand
+            {
+                LocalSection = LocalSection.Static,
+                Name = "Sensor1",
+                DataType = "Real",
+                MemoryArea = LocalSection.LocalVariable,
+                
+            };
+            Operand operand2 = new Operand
+            {
+                LocalSection = LocalSection.Static,
+                Name = "Sensor2",
+                DataType = "Real",
+                MemoryArea = LocalSection.LocalVariable,
+
+            };
+
+            XElement structuredText = _xmlWrapper.RootElementXml.Descendants(SclNodes.StructuredText)?.FirstOrDefault();
+            //List<XElement> sclCode = _sclWrapper.SclGenerateAssignment(operand1, operand2);
+            //foreach(var element in  sclCode) {
+            //structuredText.Add(element);
+            //}
+            //_xmlWrapper.RootElementAsString = _xmlWrapper.RootElementXml.ToString();
+            _xmlWrapper.RootElementAsString = structuredText.ToString();
+
+
         }
     }
 }

@@ -27,6 +27,7 @@ namespace Basic_Openness
     }
     internal static class SclNodes
     {
+        public const string StructuredText = "StructuredText";
         public const string Access = @"Access";
         public const string Blank = @"Blank";
         public const string NewLine = @"NewLine";
@@ -45,7 +46,7 @@ namespace Basic_Openness
 
 
     }
-    public static class OperandType
+    public static class LocalSection
     {
         public const string Input = "Input";
         public const string Output = "Output";

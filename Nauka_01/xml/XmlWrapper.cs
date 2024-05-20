@@ -17,19 +17,20 @@ namespace Basic_Openness
 
 
         private string _generatedXmlAsString;
-        public string GeneratedXmlAsString {
+        public string RootElementAsString {
             get => _generatedXmlAsString;
             set
             {
                 if (value != _generatedXmlAsString)
                 {
                     _generatedXmlAsString = value;
-                    NotifyPropertyChanged(nameof(GeneratedXmlAsString));
+                    NotifyPropertyChanged(nameof(RootElementAsString));
                 }
             }
         }
 
         public XElement GeneratedXml { get; set; }
+        public XElement RootElementXml { get; set; }
         public XNamespace NsInterface { get; set; } = "http://www.siemens.com/automation/Openness/SW/Interface/v5";
         public XDocument XmlFile { get; set; }
         public Microsoft.Win32.OpenFileDialog XmlOpenFileDialog { get; set; }

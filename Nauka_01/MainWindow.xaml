@@ -510,6 +510,7 @@
                         </Grid>
                         <Button x:Name="btnXmlGenerateInput" Content="Generate input" Click="btnXmlGenerateInputClick"/>
                         <Separator HorizontalAlignment="Stretch" Background="Black"/>
+                        <Button x:Name="btnXmlGenerateAssignment" Content="Generate assignment" Click="btnXmlGenerateAssignmentClick"/>
                     </StackPanel>
 
                     <!--prawa strona okna-->
@@ -523,7 +524,7 @@
                             <Label Grid.Row="0" Content="Generated XML" />
                             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible" PanningMode="Both">
 
-                                <TextBlock  x:Name="textBlockXmlGeneratedXml" TextWrapping="NoWrap" Text="{Binding GeneratedXmlAsString}"
+                                <TextBlock  x:Name="textBlockXmlGeneratedXml" TextWrapping="NoWrap" Text="{Binding RootElementAsString}"
                                             AllowDrop="False"/>
 
                             </ScrollViewer>

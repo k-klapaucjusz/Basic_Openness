@@ -20,7 +20,7 @@ namespace Basic_Openness
             this.ns = null;
             _uid = 21;
         }
-        public SclWrapper(XNamespace ns): this() 
+        public SclWrapper(XNamespace ns) : this()
         {
             this.ns = ns;
         }
@@ -33,6 +33,12 @@ namespace Basic_Openness
         {
             private Operand _leftSide;
             private List<ISclSyntax> _rightSide = new List<ISclSyntax>();
+
+            public SclAssignment(Operand leftSide, Operand rightSide)
+            {
+                _leftSide = leftSide;
+                _rightSide.Add(rightSide);
+            }
 
             public SclAssignment(Operand leftSide, List<ISclSyntax> rightSide)
             {
@@ -65,7 +71,10 @@ namespace Basic_Openness
                     }
                 }
             }
-            public LiteralConst() { }
+            public LiteralConst()
+            {
+                Value = "0";
+            }
 
             public LiteralConst(string value)
             {
@@ -81,7 +90,7 @@ namespace Basic_Openness
             }
 
 
-            public string MemoryType { get; } = "LiteralConstant";
+            public virtual string MemoryArea { get; set; } = "LiteralConstant";
 
             private bool IsValidNumber(string value)
             {
@@ -101,15 +110,23 @@ namespace Basic_Openness
 
         public class Operand : LiteralConst
         {
-            // mniej więcej taka zawartość, punkt wyjścia
-            public string Type { get; set; }
+            // tu trzeba jakiś dobry konstruktor zrobić żeby był porządek 
+            // - jeśli GlobalVar to LocalSection = null
+            // - MemoryArea nie może być Literal. Domyślnie LocalVar
+            // - MemoryArea powinna być nie do zmiany po deklaracji
+            // - StartValue musi być dopasowane do DataType
+            // - sprawdzać czy IsRetain jest zgodne z klasą Remanence
+            // - sprawdzać Attributes, StartValue, IsRetain, IsSetpoint w zależności od LocalMemory
+            // - sprawdzić jakie są zależności miedzy konstruktorem a definicja { } przy deklaracji
+            public string DataType { get; set; }  //bool, int, real.....
+            public string LocalSection { get; set; } // input, output, static....
             public string Name { get; set; }
-            public new string MemoryType { get; set; }
-            public MultiLanguageText Comment { get; set; }
-            public List<BooleanAttribute> Attributes { get; set; }
-            public string StartValue { get; set; }
-            public string IsRetain { get; set; }
-            public string IsSetPoint { get; set; }
+            public override string MemoryArea { get; set; } // LocalVariable, GlobalVariable, LiteralConstant
+            public MultiLanguageText Comment { get; set; } = null;
+            public List<BooleanAttribute> Attributes { get; set; } = null;
+            public string StartValue { get; set; } = null;
+            public string IsRetain { get; set; } = null;
+            public string IsSetPoint { get; set; } = null;
         }
 
 
@@ -140,32 +157,27 @@ namespace Basic_Openness
                 return fields.Any(field => (string)field.GetValue(null) == token);
             }
         }
-        //public class SclOperand : ISclSyntax
-        //{
-        //    public string Value { get; set; }
-        //}
-
-
+      
 
         public XElement SclGenerateAccess(Operand operand)
         {
             string[] localOperand =
             {
-                OperandType.Input, OperandType.Output, OperandType.InOut, OperandType.Static, OperandType.Temp, OperandType.Constant
+                LocalSection.Input, LocalSection.Output, LocalSection.InOut, LocalSection.Static, LocalSection.Temp, LocalSection.Constant
             };
             //XElement accessElement;
 
-            bool isLocal = localOperand.Contains(operand.Type);
-            bool isGlobal = operand.MemoryType == OperandType.GlobalVariable;
+            bool isLocal = localOperand.Contains(operand.LocalSection);
+            bool isGlobal = operand.MemoryArea == LocalSection.GlobalVariable;
 
             if (isLocal || isGlobal)
             {
                 //accessElement = new XElement(SclNodes.Access, new XAttribute("Scope", OperandType.LocalVariable), new XAttribute("UId", _uid++.ToString())) ;
                 string scope = null;
                 if (isLocal || !isGlobal)
-                    scope = OperandType.LocalVariable;
+                    scope = LocalSection.LocalVariable;
                 else if (!isLocal || isGlobal)
-                    scope = OperandType.GlobalVariable;
+                    scope = LocalSection.GlobalVariable;
                 else Console.WriteLine("ERROR in SclGenerateAccess(): global / local missmatch !!!");
 
 
@@ -186,10 +198,11 @@ namespace Basic_Openness
                 return accessElement;
 
             }
-            else if (operand.MemoryType == OperandType.LiteralConstant)
+            // tutaj pewnie trzeba dodać sprawdzenie operand is LiteralConstant
+            else if (operand.MemoryArea == LocalSection.LiteralConstant)
             {
                 XElement accessElement = new XElement(SclNodes.Access,
-                    new XAttribute(SclNodes.Scope, OperandType.LiteralConstant),
+                    new XAttribute(SclNodes.Scope, LocalSection.LiteralConstant),
                     new XAttribute(SclNodes.UId, _uid++));
 
                 XElement constantElement = new XElement(SclNodes.Constant,
@@ -228,6 +241,87 @@ namespace Basic_Openness
                 }
             }
         }
+        public List<XElement> SclGenerateAssignment(Operand leftSide, Operand rightSide)
+        {
+            return GeneateAssignment(leftSide, new List<ISclSyntax> { rightSide });
+        }
+        public List<XElement> SclGenerateAssignment(Operand leftSide, List<ISclSyntax> rightSide)
+        {
+            return GeneateAssignment(leftSide, rightSide );
+        }
 
+
+        private List<XElement> GeneateAssignment(Operand leftSide, List<ISclSyntax> rightSide)
+        {
+            List<XElement> assignmentElement = new List<XElement>();
+            try
+            {
+                if (leftSide == null || rightSide == null)
+                {
+                    throw new ArgumentException("Operand for left and right side of assignment can't be null");
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+            // left side
+            assignmentElement.Add(SclGenerateAccess(leftSide));
+            // :=
+            foreach (var element in SclGenerateAssignSign())
+            {
+                assignmentElement.Add(element);
+            }
+            // right side
+            foreach (var element in rightSide)
+            {
+                if (element is Operand)
+                {
+                    assignmentElement.Add(SclGenerateAccess((Operand)element));
+                }
+                else if (element is SclToken)
+                {
+                    assignmentElement.Add(SclGenerateToken((SclToken)element));
+                }
+                else
+                {
+                    throw new ArgumentException("so far only Operand and Token");
+                }
+            }
+
+
+
+            return assignmentElement;
+        }
+        private XElement[] SclGenerateAssignSign()
+        {
+            return new XElement[]
+        {
+            new XElement(SclNodes.Blank, new XAttribute(SclNodes.UId, _uid++)),
+            new XElement(SclNodes.Token, new XAttribute(SclNodes.Text, Token.Assign), new XAttribute(SclNodes.UId, _uid++)),
+            new XElement(SclNodes.Blank, new XAttribute(SclNodes.UId, _uid ++))
+        };
+
+
+        }
+        private XElement SclGenerateToken(SclToken token)
+        {
+            return new XElement(SclNodes.Token, new XAttribute(SclNodes.Text, token.Value), new XAttribute(SclNodes.UId, _uid++));
+        }
+        private XElement SclGenerateNewLine()
+        {
+            return new XElement(SclNodes.NewLine, new XAttribute(SclNodes.UId, _uid++));
+        }
+        private XElement[] SclGenerateEndOfLine()
+        {
+            return new XElement[] {
+                new XElement(SclNodes.Token, new XAttribute(SclNodes.Text, Token.EndOfExpr), new XAttribute(SclNodes.UId, _uid++)),
+                SclGenerateNewLine()
+                    };
+        }
     }
+
 }
+
+
+
