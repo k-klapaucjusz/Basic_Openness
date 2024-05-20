@@ -649,13 +649,19 @@ namespace Basic_Openness
 
             };
 
-            XElement structuredText = _xmlWrapper.RootElementXml.Descendants(SclNodes.StructuredText)?.FirstOrDefault();
-            //List<XElement> sclCode = _sclWrapper.SclGenerateAssignment(operand1, operand2);
-            //foreach(var element in  sclCode) {
-            //structuredText.Add(element);
-            //}
-            //_xmlWrapper.RootElementAsString = _xmlWrapper.RootElementXml.ToString();
-            _xmlWrapper.RootElementAsString = structuredText.ToString();
+            XElement structuredText = _xmlWrapper.RootElementXml.Descendants(_sclWrapper.ns+SclNodes.StructuredText)?.FirstOrDefault();
+            if (structuredText != null) {
+                List<XElement> sclCode = _sclWrapper.SclGenerateAssignment(operand1, operand2);
+                foreach (var element in sclCode)
+                {
+                    structuredText.Add(element);
+                }
+                _xmlWrapper.RootElementAsString = _xmlWrapper.RootElementXml.ToString();
+
+
+                //_xmlWrapper.RootElementAsString = structuredText.ToString();
+            }
+            else Console.WriteLine("structuredText = null !!!");
 
 
         }
