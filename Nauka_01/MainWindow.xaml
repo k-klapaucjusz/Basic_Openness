@@ -453,10 +453,12 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
                             <Button x:Name="btnXmlOpenFile2" Content="Open file" Click="btnXmlOpenFileClick2" Grid.Column="0" />
                             <Button x:Name="btnXmlSaveFile2" Content="Save file" Click="btnXmlSaveFileClick2" Grid.Column="1"/>
+                            <Button x:Name="btnXmlSaveAs" Content="Safe file as" Click="btnXmlSaveAsClick" Grid.Column="2"/>
                         </Grid>
                         <Separator HorizontalAlignment="Stretch" Background="Black" />
 
@@ -510,11 +512,34 @@
                         </Grid>
                         <Button x:Name="btnXmlGenerateInput" Content="Generate input" Click="btnXmlGenerateInputClick"/>
                         <Separator HorizontalAlignment="Stretch" Background="Black"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" MinWidth="50" />
+                            </Grid.ColumnDefinitions>
+                            <Label Content="UId max: " Grid.Column="0"/>
+                            <TextBox x:Name="textBoxXmlUidMax" Text="{Binding UId}" Grid.Column="1"/>
+                            
+                        </Grid>
                         <Button x:Name="btnXmlGenerateAssignment" Content="Generate assignment" Click="btnXmlGenerateAssignmentClick"/>
                     </StackPanel>
 
                     <!--prawa strona okna-->
                     <DockPanel Grid.Column="1" Grid.Row="0" >
+                        <DockPanel.Resources>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="FontSize" Value="11"/>
+                                <Setter Property="Foreground" Value="Black"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <!--<Setter Property="FontSize" Value="14"/>-->
+                                        <Setter Property="Foreground" Value="Blue"/>
+                                        <!--<Setter Property="FontWeight" Value="Bold"/>-->
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DockPanel.Resources>
                         <Grid >
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,19 +12,25 @@ using System.Xml.Linq;
 
 namespace Basic_Openness
 {
-    internal class SclWrapper
+    internal class SclWrapper : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         private int _uid;
-        public XNamespace ns;
+        private XNamespace _ns;
 
         public SclWrapper()
         {
-            this.ns = null;
+            this._ns = null;
             _uid = 21;
         }
         public SclWrapper(XNamespace ns) : this()
         {
-            this.ns = ns;
+            this._ns = ns;
         }
         public SclWrapper(XNamespace ns, int uid) : this(ns)
         {
@@ -45,9 +53,26 @@ namespace Basic_Openness
                 _leftSide = leftSide;
                 _rightSide = rightSide;
             }
-
-
         }
+
+        public XNamespace Ns { get =>  _ns; }
+        public int UId {
+            get => _uid;
+            set { if (_uid <= value)
+                {
+                    _uid = value;
+                    NotifyPropertyChanged(nameof(UId));
+                }
+                else if (_uid == value) {
+                    Console.WriteLine($"Warning: UId = _uid {value}");  //rewise idea with UId and checking Uid == _uid
+                }
+                else
+                {
+                    Console.WriteLine($"Error: Wrong UId {value}"); //exception temporary blocked to figure out what is the poblem
+                    //throw new ArgumentException("Error: you tries set value then the current value to the UId. Naughty, naughty!");
+                }
+            }
+            }
         public interface ISclSyntax
         {
             //string MemoryType { get; set; }
@@ -172,7 +197,7 @@ namespace Basic_Openness
 
             if (isLocal || isGlobal)
             {
-                //accessElement = new XElement(SclNodes.Access, new XAttribute("Scope", OperandType.LocalVariable), new XAttribute("UId", _uid++.ToString())) ;
+                //accessElement = new XElement(SclNodes.Access, new XAttribute("Scope", OperandType.LocalVariable), new XAttribute("UId", ++_uid.ToString())) ;
                 string scope = null;
                 if (isLocal || !isGlobal)
                     scope = LocalSection.LocalVariable;
@@ -183,36 +208,38 @@ namespace Basic_Openness
 
                 string[] parts = operand.Name.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
 
-                XElement accessElement = new XElement("Access",
+                XElement accessElement = new XElement(_ns + SclNodes.Access,
                     new XAttribute(SclNodes.Scope, scope),
-                    new XAttribute(SclNodes.UId, _uid++)
+                    new XAttribute(SclNodes.UId, ++_uid)
                 );
 
-                XElement symbolElement = new XElement(SclNodes.Symbol,
-                    new XAttribute(SclNodes.UId, _uid++)
+                XElement symbolElement = new XElement(_ns + SclNodes.Symbol,
+                    new XAttribute(SclNodes.UId, ++_uid)
                 );
 
                 SclGenerateComponents(symbolElement, parts, ref _uid);
 
                 accessElement.Add(symbolElement);
+                //UId = _uid;
                 return accessElement;
 
             }
             // tutaj pewnie trzeba dodać sprawdzenie operand is LiteralConstant
             else if (operand.MemoryArea == LocalSection.LiteralConstant)
             {
-                XElement accessElement = new XElement(SclNodes.Access,
+                XElement accessElement = new XElement(_ns + SclNodes.Access,
                     new XAttribute(SclNodes.Scope, LocalSection.LiteralConstant),
-                    new XAttribute(SclNodes.UId, _uid++));
+                    new XAttribute(SclNodes.UId, ++_uid));
 
-                XElement constantElement = new XElement(SclNodes.Constant,
-                    new XAttribute(SclNodes.UId, _uid++));
+                XElement constantElement = new XElement(_ns + SclNodes.Constant,
+                    new XAttribute(SclNodes.UId, ++_uid));
 
-                XElement constantValueElement = new XElement(SclNodes.ConstantValue,
-                    new XAttribute(SclNodes.UId, _uid++), operand.Value);
+                XElement constantValueElement = new XElement(_ns + SclNodes.ConstantValue,
+                    new XAttribute(SclNodes.UId, ++_uid), operand.Value);
 
                 constantElement.Add(constantValueElement);
                 accessElement.Add(constantElement);
+                UId = _uid;
                 return accessElement;
             }
             else
@@ -227,33 +254,44 @@ namespace Basic_Openness
         {
             foreach (string part in parts)
             {
-                symbolElement.Add(new XElement(SclNodes.Component,
+                symbolElement.Add(new XElement(_ns + SclNodes.Component,
                     new XAttribute(SclNodes.Name, part),
-                    new XAttribute(SclNodes.UId, uid++)
+                    new XAttribute(SclNodes.UId, ++uid)
                 ));
 
                 if (part != parts.Last())
                 {
-                    symbolElement.Add(new XElement(SclNodes.Token,
+                    symbolElement.Add(new XElement(_ns + SclNodes.Token,
                         new XAttribute(SclNodes.Text, Token.Dot),
-                        new XAttribute(SclNodes.UId, uid++)
+                        new XAttribute(SclNodes.UId, ++uid)
                     ));
                 }
             }
+            
         }
         public List<XElement> SclGenerateAssignment(Operand leftSide, Operand rightSide)
         {
-            return GeneateAssignment(leftSide, new List<ISclSyntax> { rightSide });
+            return GeneateAssignment(leftSide, new List<ISclSyntax> { rightSide } );
         }
         public List<XElement> SclGenerateAssignment(Operand leftSide, List<ISclSyntax> rightSide)
         {
-            return GeneateAssignment(leftSide, rightSide );
+            return GeneateAssignment(leftSide, rightSide);
         }
 
 
         private List<XElement> GeneateAssignment(Operand leftSide, List<ISclSyntax> rightSide)
         {
             List<XElement> assignmentElement = new List<XElement>();
+            //// kosmiczna konstrukcja ale okazała się bezużyteczna ;))))
+            //_uid = elementWithStructuredTextNode != null ? // 1) - check if argument != null
+            //    // 1) argument not null
+            //    (GetMaxUId(elementWithStructuredTextNode) >= _uid ? GetMaxUId(elementWithStructuredTextNode) : 0) 
+            //    // 1) argument == null
+            //    : ( (uid >= _uid) ? 
+            //        (uid) 
+            //            : (uid == 0 ? _uid : 0) ); // by default argument uid = 0 
+            //if (_uid < 21) throw new ArgumentException("Error:UId < 21 ");
+
             try
             {
                 if (leftSide == null || rightSide == null)
@@ -288,37 +326,62 @@ namespace Basic_Openness
                     throw new ArgumentException("so far only Operand and Token");
                 }
             }
-
-
-
+            foreach(var element in SclGenerateEndOfLine())
+            {
+                assignmentElement.Add(element);
+            }
+            UId = _uid;
             return assignmentElement;
         }
         private XElement[] SclGenerateAssignSign()
         {
             return new XElement[]
         {
-            new XElement(SclNodes.Blank, new XAttribute(SclNodes.UId, _uid++)),
-            new XElement(SclNodes.Token, new XAttribute(SclNodes.Text, Token.Assign), new XAttribute(SclNodes.UId, _uid++)),
-            new XElement(SclNodes.Blank, new XAttribute(SclNodes.UId, _uid ++))
+            new XElement(_ns + SclNodes.Blank, new XAttribute(SclNodes.UId, ++_uid)),
+            new XElement(_ns + SclNodes.Token, new XAttribute(SclNodes.Text, Token.Assign), new XAttribute(SclNodes.UId, ++_uid)),
+            new XElement(_ns + SclNodes.Blank, new XAttribute(SclNodes.UId, ++_uid))
         };
 
 
         }
         private XElement SclGenerateToken(SclToken token)
         {
-            return new XElement(SclNodes.Token, new XAttribute(SclNodes.Text, token.Value), new XAttribute(SclNodes.UId, _uid++));
+            return new XElement(_ns + SclNodes.Token, new XAttribute(SclNodes.Text, token.Value), new XAttribute(SclNodes.UId, ++_uid));
         }
         private XElement SclGenerateNewLine()
         {
-            return new XElement(SclNodes.NewLine, new XAttribute(SclNodes.UId, _uid++));
+            return new XElement(_ns + SclNodes.NewLine, new XAttribute(SclNodes.UId, ++_uid));
         }
         private XElement[] SclGenerateEndOfLine()
         {
             return new XElement[] {
-                new XElement(SclNodes.Token, new XAttribute(SclNodes.Text, Token.EndOfExpr), new XAttribute(SclNodes.UId, _uid++)),
+                new XElement(_ns + SclNodes.Token, new XAttribute(SclNodes.Text, Token.EndOfExpr), new XAttribute(SclNodes.UId, ++_uid)),
                 SclGenerateNewLine()
                     };
         }
+        public static int GetMaxUId(XElement xmlElement)
+        {
+            // Select all attributes named "UId" and parse their values to integers
+            var uids = xmlElement
+                .DescendantsAndSelf()
+                .Attributes("UId")
+                .Select(attr => int.TryParse(attr.Value, out int value) ? value : (int?)null)
+                .Where(value => value.HasValue)
+                .Select(value => value.Value);
+            Console.WriteLine(uids);
+            // Return the maximum value or 0 if no valid UId attributes are found
+            return uids.Any() ? uids.Max() : 0;
+        }
+        public void XmlSetUid(int uid)
+        {
+            //_uid = ((uid >= _uid) ?
+            //       (uid)
+            //           : (uid == 0 ? _uid : 0)); // by default argument uid = 0 
+            //if (_uid < 21) throw new ArgumentException("Error:UId < 21 ");
+            UId = uid;
+        }
+
+
     }
 
 }

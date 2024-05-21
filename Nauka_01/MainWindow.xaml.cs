@@ -85,6 +85,9 @@ namespace Basic_Openness
             //tBoxZapis.DataContext = _apiWrapper; // bez tej linii nie zadziała BINDING Text="{Binding iValue}" 
             // czyli tak na chłopski rozum trzeba wskazać klasę w której znajduje się iValue żeby binding w XAML zadziałał
             tabItemXml.DataContext = _xmlWrapper;
+            textBoxXmlUidMax.DataContext = _sclWrapper;
+
+
 
             PrzygotujWiazanie(); // fragment przekopiowany z książki
             // zakładka Processes
@@ -612,6 +615,9 @@ namespace Basic_Openness
                 //Console.WriteLine($"OPEN XML FILE - NODE ENGINEERING: {_xmlWrapper.XmlFile.Descendants("Engineering").FirstOrDefault().ToString()}");
                 _xmlWrapper.GeneratedXml = _xmlWrapper.XmlFile.Descendants("Interface")?.FirstOrDefault();
                 _xmlWrapper.RootElementXml = _xmlWrapper.XmlFile.Root;
+                // find max UId in xml 
+                //_sclWrapper.XmlSetUid(SclWrapper.GetMaxUId(_xmlWrapper.RootElementXml)); // new wersion below (with property UId)
+                _sclWrapper.UId = SclWrapper.GetMaxUId(_xmlWrapper.RootElementXml);
 
                 //Console.WriteLine($"OPEN XML FILE - NODE INTERFACE: {_xmlWrapper.XmlFile.Descendants("Interface").Count()}");
                 //Console.WriteLine($"OPEN XML FILE - NODE INTERFACE: {_xmlWrapper.GeneratedXml}");
@@ -649,7 +655,8 @@ namespace Basic_Openness
 
             };
 
-            XElement structuredText = _xmlWrapper.RootElementXml.Descendants(_sclWrapper.ns+SclNodes.StructuredText)?.FirstOrDefault();
+            XElement structuredText = _xmlWrapper.RootElementXml.
+                Descendants(_sclWrapper.Ns+SclNodes.StructuredText)?.FirstOrDefault();
             if (structuredText != null) {
                 List<XElement> sclCode = _sclWrapper.SclGenerateAssignment(operand1, operand2);
                 foreach (var element in sclCode)
@@ -664,6 +671,34 @@ namespace Basic_Openness
             else Console.WriteLine("structuredText = null !!!");
 
 
+        }
+
+        private void btnXmlSaveAsClick(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog()
+            {
+                Title = "Save file as",
+                DefaultExt = ".xml",
+                Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*",
+                FileName = _xmlWrapper.XmlOpenFileDialog.FileName.Split(new[] { '.' }).FirstOrDefault() + "_import"
+            };
+            bool? result = saveFileDialog.ShowDialog();
+            if (result == true)
+            {
+                string filePath = saveFileDialog.FileName;
+                if (!filePath.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
+                {
+                    filePath += ".xml";
+                }
+                _xmlWrapper.XmlFile.Save(filePath);
+
+                // Wyświetl wybraną ścieżkę
+                Console.WriteLine("Selected folder: " + saveFileDialog.FileName);
+            }
+            else
+            {
+                Console.WriteLine("Anulowano wybór folderu.");
+            }
         }
     }
 }
