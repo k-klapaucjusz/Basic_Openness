@@ -638,22 +638,35 @@ namespace Basic_Openness
 
         private void btnXmlGenerateAssignmentClick(object sender, RoutedEventArgs e)
         {
-            Operand operand1 = new Operand
+            Operand operand1 = new Operand(MemoryAreas.LocalVariable)
             {
-                LocalSection = LocalSection.Static,
+                InterfaceSection = InterfaceSections.Static,
                 Name = "Sensor1",
                 DataType = "Real",
-                MemoryArea = LocalSection.LocalVariable,
+                //MemoryArea = MemoryAreas.LocalVariable,
                 
             };
-            Operand operand2 = new Operand
+            Operand operand2 = new Operand(MemoryAreas.LocalVariable)
             {
-                LocalSection = LocalSection.Static,
+                InterfaceSection = InterfaceSections.Static,
                 Name = "Sensor2",
                 DataType = "Real",
-                MemoryArea = LocalSection.LocalVariable,
+                //MemoryArea = MemoryAreas.LocalVariable,
 
             };
+
+            Operand operand3 = new Operand(MemoryAreas.LocalVariable)
+            {
+                InterfaceSection = InterfaceSections.Temp,
+                Name = "TSensor3",
+                DataType = "Real",
+                IsRetain = Remanence.Retain,
+                StartValue = "13.13"
+
+            };
+
+            Console.WriteLine($"operand3: {operand3.MemoryArea} {operand3.InterfaceSection} {operand3.Name} {operand3.DataType} {operand3.IsRetain} {operand3.IsSetPoint} {operand3.StartValue}"); // { operand3.InterfaceSection, operand3.Name, operand3.DataType, operand3.IsRetain, operand3.IsSetPoint, operand3.StartValue );
+
 
             XElement structuredText = _xmlWrapper.RootElementXml.
                 Descendants(_sclWrapper.Ns+SclNodes.StructuredText)?.FirstOrDefault();

@@ -55,15 +55,19 @@ namespace Basic_Openness
             }
         }
 
-        public XNamespace Ns { get =>  _ns; }
-        public int UId {
+        public XNamespace Ns { get => _ns; }
+        public int UId
+        {
             get => _uid;
-            set { if (_uid <= value)
+            set
+            {
+                if (_uid <= value)
                 {
                     _uid = value;
                     NotifyPropertyChanged(nameof(UId));
                 }
-                else if (_uid == value) {
+                else if (_uid == value)
+                {
                     Console.WriteLine($"Warning: UId = _uid {value}");  //rewise idea with UId and checking Uid == _uid
                 }
                 else
@@ -72,7 +76,7 @@ namespace Basic_Openness
                     //throw new ArgumentException("Error: you tries set value then the current value to the UId. Naughty, naughty!");
                 }
             }
-            }
+        }
         public interface ISclSyntax
         {
             //string MemoryType { get; set; }
@@ -135,23 +139,153 @@ namespace Basic_Openness
 
         public class Operand : LiteralConst
         {
-            // tu trzeba jakiś dobry konstruktor zrobić żeby był porządek 
-            // - jeśli GlobalVar to LocalSection = null
-            // - MemoryArea nie może być Literal. Domyślnie LocalVar
-            // - MemoryArea powinna być nie do zmiany po deklaracji
+            // - jeśli GlobalVariable to IntefaceSectionn = null
+            // - MemoryArea nie może być LiteralConstant. Domyślnie LocalVariable
+            // - MemoryArea powinna być niezmienna po deklaracji
             // - StartValue musi być dopasowane do DataType
             // - sprawdzać czy IsRetain jest zgodne z klasą Remanence
             // - sprawdzać Attributes, StartValue, IsRetain, IsSetpoint w zależności od LocalMemory
+            //      - Constatnt: Attributies, IsRetain, IsSetPoint = null
+            //      - Temp: Attributies, StartValue, IsRetain, IsSetPoint = null
+            //      - Input: IsSetPoint = null
+            //      - Output: IsSetPoint = null
+            //      - InOut: IsSetPoint = null
+            //      - Static: all properties allowed
+            // - Value = null (dziedziczone z LiteralConst)
             // - sprawdzić jakie są zależności miedzy konstruktorem a definicja { } przy deklaracji
-            public string DataType { get; set; }  //bool, int, real.....
-            public string LocalSection { get; set; } // input, output, static....
+            ////public string DataType { get; set; }  //bool, int, real.....
+            ////public string IntefaceSectionn { get; set; } // input, output, static....
+            ////public string Name { get; set; }
+            ////public override string MemoryArea { get; set; } // LocalVariable, GlobalVariable, LiteralConstant
+            ////public MultiLanguageText Comment { get; set; } = null;
+            ////public List<BooleanAttribute> Attributes { get; set; } = null;
+            ////public string StartValue { get; set; } = null;
+            ////public string IsRetain { get; set; } = null;
+            ////public string IsSetPoint { get; set; } = null;
+            ///
+
+            public Operand(string memoryArea)
+            {
+                if (memoryArea == MemoryAreas.LiteralConstant)
+                {
+                    throw new ArgumentException("MemoryArea cannot be LiteralConstant for Operand.");
+                }
+
+                _memoryArea = memoryArea;
+                if (memoryArea == MemoryAreas.GlobalVariable)
+                {
+                    InterfaceSection = null; // this properties don't describe GlobalVariable
+                }
+            }
+
+            private string _dataType;
+            public string DataType { get => _dataType; set { _dataType = value; } }  // bool, int, real.....
+            private string _interfaceSection;
+            public string InterfaceSection
+            {
+                get => _interfaceSection;
+                set
+                {
+                    if (_memoryArea == MemoryAreas.LocalVariable)
+                    {
+                        if (IsValidInterfaceSection(value))
+                        {
+                            _interfaceSection = value;
+                            ValidateProperties();
+                        }
+                        else
+                        {
+                            throw new ArgumentException("Invalid InterfaceSection value.");
+                        }
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Setting InterfaceSection is allowed only for LocalVariable");
+                    }
+                }
+            }
+
             public string Name { get; set; }
-            public override string MemoryArea { get; set; } // LocalVariable, GlobalVariable, LiteralConstant
+
+            private readonly string _memoryArea;
+            public override string MemoryArea
+            {
+                get => _memoryArea;
+                set => throw new InvalidOperationException("MemoryArea cannot be changed after initialization.");
+            }
+
             public MultiLanguageText Comment { get; set; } = null;
             public List<BooleanAttribute> Attributes { get; set; } = null;
-            public string StartValue { get; set; } = null;
+            //private string[] _startValueAllowed = { InterfaceSections.Input, InterfaceSections.Output, InterfaceSections.InOut, InterfaceSections.Static, InterfaceSections.Constant };
+            private string _startValue;
+            public string StartValue
+            {
+                get => _startValue;
+                set
+                {
+                    if (ValidateStartValue(value))
+                    {
+                        _startValue = value;
+                    }
+
+                }
+            }
             public string IsRetain { get; set; } = null;
             public string IsSetPoint { get; set; } = null;
+
+            public bool ValidateStartValue(string startValue)
+            {
+                string[] _startValueAllowed = { InterfaceSections.Input, InterfaceSections.Output, InterfaceSections.InOut
+                        , InterfaceSections.Static, InterfaceSections.Constant };
+
+                if (_dataType == null)
+                {
+                    return false;
+                    throw new ArgumentNullException("DataType cannot be null when assinging StartValue");
+                }
+
+                else if (_startValueAllowed.Contains(_interfaceSection) && DataTypes.BasicDataTypes.ContainsKey(DataType.ToUpper()))
+                {
+                    return XmlGeneral.IsConvertibleToType(_dataType, startValue);
+                }
+                else
+                {
+                    return false;
+                    throw new ArgumentException("For this InterfaceSection or DataType StartValue is not allowed");
+                }
+            }
+
+
+
+
+            private void ValidateProperties()
+            {
+                if (_interfaceSection == InterfaceSections.Constant)
+                {
+                    Attributes = null;
+                    IsRetain = null;
+                    IsSetPoint = null;
+                }
+                else if (_interfaceSection == InterfaceSections.Temp)
+                {
+                    Attributes = null;
+                    StartValue = null;
+                    IsRetain = null;
+                    IsSetPoint = null;
+                }
+                else if (_interfaceSection == InterfaceSections.Input || _interfaceSection == InterfaceSections.Output || _interfaceSection == InterfaceSections.InOut)
+                {
+                    IsSetPoint = null;
+                }
+            }
+            private bool IsValidInterfaceSection(string value)
+            {
+                var interfaceSections = typeof(InterfaceSections).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+                    .Where(fi => fi.IsLiteral && !fi.IsInitOnly && fi.FieldType == typeof(string))
+                    .Select(fi => (string)fi.GetRawConstantValue());
+
+                return interfaceSections.Contains(value);
+            }
         }
 
 
@@ -182,27 +316,27 @@ namespace Basic_Openness
                 return fields.Any(field => (string)field.GetValue(null) == token);
             }
         }
-      
+
 
         public XElement SclGenerateAccess(Operand operand)
         {
             string[] localOperand =
             {
-                LocalSection.Input, LocalSection.Output, LocalSection.InOut, LocalSection.Static, LocalSection.Temp, LocalSection.Constant
+                InterfaceSections.Input, InterfaceSections.Output, InterfaceSections.InOut, InterfaceSections.Static, InterfaceSections.Temp, InterfaceSections.Constant
             };
             //XElement accessElement;
 
-            bool isLocal = localOperand.Contains(operand.LocalSection);
-            bool isGlobal = operand.MemoryArea == LocalSection.GlobalVariable;
+            bool isLocal = localOperand.Contains(operand.InterfaceSection);
+            bool isGlobal = operand.MemoryArea == MemoryAreas.GlobalVariable;
 
             if (isLocal || isGlobal)
             {
                 //accessElement = new XElement(SclNodes.Access, new XAttribute("Scope", OperandType.LocalVariable), new XAttribute("UId", ++_uid.ToString())) ;
                 string scope = null;
                 if (isLocal || !isGlobal)
-                    scope = LocalSection.LocalVariable;
+                    scope = MemoryAreas.LocalVariable;
                 else if (!isLocal || isGlobal)
-                    scope = LocalSection.GlobalVariable;
+                    scope = MemoryAreas.GlobalVariable;
                 else Console.WriteLine("ERROR in SclGenerateAccess(): global / local missmatch !!!");
 
 
@@ -225,10 +359,10 @@ namespace Basic_Openness
 
             }
             // tutaj pewnie trzeba dodać sprawdzenie operand is LiteralConstant
-            else if (operand.MemoryArea == LocalSection.LiteralConstant)
+            else if (operand.MemoryArea == MemoryAreas.LiteralConstant)
             {
                 XElement accessElement = new XElement(_ns + SclNodes.Access,
-                    new XAttribute(SclNodes.Scope, LocalSection.LiteralConstant),
+                    new XAttribute(SclNodes.Scope, MemoryAreas.LiteralConstant),
                     new XAttribute(SclNodes.UId, ++_uid));
 
                 XElement constantElement = new XElement(_ns + SclNodes.Constant,
@@ -267,11 +401,11 @@ namespace Basic_Openness
                     ));
                 }
             }
-            
+
         }
         public List<XElement> SclGenerateAssignment(Operand leftSide, Operand rightSide)
         {
-            return GeneateAssignment(leftSide, new List<ISclSyntax> { rightSide } );
+            return GeneateAssignment(leftSide, new List<ISclSyntax> { rightSide });
         }
         public List<XElement> SclGenerateAssignment(Operand leftSide, List<ISclSyntax> rightSide)
         {
@@ -326,7 +460,7 @@ namespace Basic_Openness
                     throw new ArgumentException("so far only Operand and Token");
                 }
             }
-            foreach(var element in SclGenerateEndOfLine())
+            foreach (var element in SclGenerateEndOfLine())
             {
                 assignmentElement.Add(element);
             }

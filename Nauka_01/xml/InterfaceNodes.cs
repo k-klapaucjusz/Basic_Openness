@@ -46,7 +46,7 @@ namespace Basic_Openness
 
 
     }
-    public static class LocalSection
+    public static class InterfaceSections
     {
         public const string Input = "Input";
         public const string Output = "Output";
@@ -54,9 +54,14 @@ namespace Basic_Openness
         public const string Static = "Static";
         public const string Temp = "Temp";
         public const string Constant = "Constant";
+
+    }
+    public static class MemoryAreas
+    {
         public const string GlobalVariable = "GlobalVariable";
         public const string LiteralConstant = "LiteralConstant";
         public const string LocalVariable = "LocalVariable";
+
     }
 
     public static class Remanence
@@ -119,5 +124,43 @@ namespace Basic_Openness
         //public const string BitwiseXor = @"^";
         //public const string BitwiseNot = @"~";
 
+
+
+        };
+        public static class DataTypes
+        {
+        public static readonly Dictionary<string, string> BasicDataTypes = new Dictionary<string, string>()
+        {
+        { "BOOL", "BOOL" },
+        { "BYTE", "BYTE" },
+        { "WORD", "WORD" },
+        { "DWORD", "DWORD" },
+        { "LWORD", "LWORD" },
+        { "SINT", "SINT" },
+        { "INT", "INT" },
+        { "DINT", "DINT" },
+        { "USINT", "USINT" },
+        { "UINT", "UINT" },
+        { "UDINT", "UDINT" },
+        { "LINT", "LINT" },
+        { "ULINT", "ULINT" },
+        { "REAL", "REAL" },
+        { "LREAL", "LREAL" },
+        { "S5TIME", "S5TIME" },
+        { "TIME", "TIME" },
+        { "LTIME", "LTIME" },
+        { "DATE", "DATE" },
+        { "TIME_OF_DAY", "TIME_OF_DAY" },
+        { "LTOD", "LTOD" },
+        { "DT", "DT" },
+        { "LDT", "LDT" },
+        { "DTL", "DTL" },
+        { "CHAR", "CHAR" },
+        { "WCHAR", "WCHAR" },
+        { "STRING", "STRING" },
+        { "WSTRING", "WSTRING" }
+        };
+
     }
+
 }
