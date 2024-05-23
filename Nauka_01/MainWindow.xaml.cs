@@ -285,7 +285,7 @@ namespace Basic_Openness
 
         //private void btnProjectsTest1Click(object sender, RoutedEventArgs e)
         //{
-        //    Tests.DisplayCompositionInfos(_apiWrapper.TiaPortal.Projects.FirstOrDefault());
+        //    Tests_chyba_hasiok.DisplayCompositionInfos(_apiWrapper.TiaPortal.Projects.FirstOrDefault());
 
         //}
 
@@ -638,28 +638,25 @@ namespace Basic_Openness
 
         private void btnXmlGenerateAssignmentClick(object sender, RoutedEventArgs e)
         {
-            Operand operand1 = new Operand(MemoryAreas.LocalVariable)
+            Operand operand1 = new Operand(MemoryAreas.LocalVariable, name: "Sensor1", dataType: "Real")
             {
                 InterfaceSection = InterfaceSections.Static,
-                Name = "Sensor1",
-                DataType = "Real",
+                
                 //MemoryArea = MemoryAreas.LocalVariable,
                 
             };
-            Operand operand2 = new Operand(MemoryAreas.LocalVariable)
+            Operand operand2 = new Operand(MemoryAreas.LocalVariable, name: "Sensor2", dataType: "Real")
             {
                 InterfaceSection = InterfaceSections.Static,
-                Name = "Sensor2",
-                DataType = "Real",
+
                 //MemoryArea = MemoryAreas.LocalVariable,
 
             };
 
-            Operand operand3 = new Operand(MemoryAreas.LocalVariable)
+            Operand operand3 = new Operand(MemoryAreas.LocalVariable, name: "TSensor3", dataType: "Real")
             {
                 InterfaceSection = InterfaceSections.Temp,
-                Name = "TSensor3",
-                DataType = "Real",
+                Name = "T__Sensor3",
                 IsRetain = Remanence.Retain,
                 StartValue = "13.13"
 

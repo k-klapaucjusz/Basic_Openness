@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Basic_Openness
 {
-    public static class Tests
+    public static class Tests_chyba_hasiok
     {
         public static void DisplayCompositionInfos(IEngineeringObject obj)
         {

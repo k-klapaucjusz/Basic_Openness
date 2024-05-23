@@ -47,7 +47,8 @@ namespace Basic_Openness
 
         public static bool IsBool(string value)
         {
-            return value.Equals("true", StringComparison.OrdinalIgnoreCase) || value.Equals("false", StringComparison.OrdinalIgnoreCase);
+            return value.Equals("true", StringComparison.OrdinalIgnoreCase) || 
+                value.Equals("false", StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool IsByte(string value)

@@ -163,8 +163,14 @@ namespace Basic_Openness
             ////public string IsRetain { get; set; } = null;
             ////public string IsSetPoint { get; set; } = null;
             ///
-
-            public Operand(string memoryArea)
+            /// <summary>
+            /// 1) assign MemoryArea - its the most important property!!!
+            /// <summary"/>
+            public Operand()    // default MemoryArea is LocalVariable
+            {
+                _memoryArea = MemoryAreas.LocalVariable;
+            }
+            public Operand(string memoryArea, string dataType, string name)
             {
                 if (memoryArea == MemoryAreas.LiteralConstant)
                 {
@@ -174,12 +180,19 @@ namespace Basic_Openness
                 _memoryArea = memoryArea;
                 if (memoryArea == MemoryAreas.GlobalVariable)
                 {
-                    InterfaceSection = null; // this properties don't describe GlobalVariable
+                    //InterfaceSection = null; // this properties don't describe GlobalVariable
+                    // version below is probably better because it skips setter of InterfaceSection
+                    _interfaceSection = null; // this properties don't describe GlobalVariable
                 }
+
+                DataType = dataType;
+                Name = name;
             }
 
-            private string _dataType;
-            public string DataType { get => _dataType; set { _dataType = value; } }  // bool, int, real.....
+            /// <summary>
+            /// 2) assign InterfaceSection. It's second most important property (this property defines
+            ///     properties like:StartValue, IsRetain, IsSetPoint)
+            /// </summary>
             private string _interfaceSection;
             public string InterfaceSection
             {
@@ -198,16 +211,57 @@ namespace Basic_Openness
                             throw new ArgumentException("Invalid InterfaceSection value.");
                         }
                     }
+                    else if (_memoryArea == MemoryAreas.GlobalVariable)
+                    {
+                        _interfaceSection = null;
+                        throw new InvalidOperationException("Setting InterfaceSection is allowed only for LocalVariable");
+                    }
                     else
                     {
                         throw new InvalidOperationException("Setting InterfaceSection is allowed only for LocalVariable");
                     }
                 }
             }
+            /// <summary>
+            /// 3) assign DataType. So far this property dosn't have any restrictions and dependencies with other properties
+            /// </summary>
+            private string _dataType;
+            public string DataType
+            {
+                get => _dataType;
+                set
+                {
+                    if (value == null || value == "")
+                    {
+                        throw new ArgumentException("DataType cannot be null or empty.");
+                    }
+                    _dataType = value;
+                }
+            }  // bool, int, real.....
+            /// <summary>
+            /// 4) Name is string without whitespaces. Whitespaces are converted to _
+            /// </summary>
 
-            public string Name { get; set; }
+            private string _name;
+            public string Name
+            {
+                get => _name;
+                set
+                {
+                    if (value == null || value == "")
+                    {
+                        throw new ArgumentException("Name cannot be null or empty.");
+                    }
+                    _name = value.Replace(" ", "_");
+                    // add more rules for Name later
+                }
+            }
 
             private readonly string _memoryArea;
+
+            /// <summary>
+            /// 5) MemoryArae cannot be changed after initialization
+            /// </summary>
             public override string MemoryArea
             {
                 get => _memoryArea;
@@ -217,6 +271,10 @@ namespace Basic_Openness
             public MultiLanguageText Comment { get; set; } = null;
             public List<BooleanAttribute> Attributes { get; set; } = null;
             //private string[] _startValueAllowed = { InterfaceSections.Input, InterfaceSections.Output, InterfaceSections.InOut, InterfaceSections.Static, InterfaceSections.Constant };
+            /// <summary>
+            /// 6) StartValue are only allowed for LocalVariable interfaceSection: Input, Output, InOut, Static, Constant
+            ///      for basic DataTypes.BasicDataTypes!!!
+            /// </summary>
             private string _startValue;
             public string StartValue
             {
@@ -238,20 +296,28 @@ namespace Basic_Openness
                 string[] _startValueAllowed = { InterfaceSections.Input, InterfaceSections.Output, InterfaceSections.InOut
                         , InterfaceSections.Static, InterfaceSections.Constant };
 
-                if (_dataType == null)
+                if (DataType == null)
                 {
-                    return false;
+
                     throw new ArgumentNullException("DataType cannot be null when assinging StartValue");
+
                 }
 
-                else if (_startValueAllowed.Contains(_interfaceSection) && DataTypes.BasicDataTypes.ContainsKey(DataType.ToUpper()))
+                else if (_startValueAllowed.Contains(InterfaceSection) && DataTypes.BasicDataTypes.ContainsKey(DataType.ToUpper()))
                 {
-                    return XmlGeneral.IsConvertibleToType(_dataType, startValue);
+                    if (XmlGeneral.IsConvertibleToType(DataType, startValue))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"StartValue: {startValue} is not convertible to DataType: {DataType}");
+                    }
                 }
                 else
                 {
-                    return false;
-                    throw new ArgumentException("For this InterfaceSection or DataType StartValue is not allowed");
+                    throw new ArgumentException($"For this InterfaceSection: {InterfaceSection} " +
+                        $"or DataType: {DataType} StartValue is not allowed");
                 }
             }
 
@@ -262,20 +328,21 @@ namespace Basic_Openness
             {
                 if (_interfaceSection == InterfaceSections.Constant)
                 {
-                    Attributes = null;
-                    IsRetain = null;
-                    IsSetPoint = null;
+                    if (Attributes != null) Attributes = null;
+                    if (IsRetain != null) IsRetain = null;
+                    if (IsSetPoint != null) IsSetPoint = null;
                 }
                 else if (_interfaceSection == InterfaceSections.Temp)
                 {
-                    Attributes = null;
-                    StartValue = null;
-                    IsRetain = null;
-                    IsSetPoint = null;
+                    if (Attributes != null) Attributes = null;
+                    if (StartValue != null) StartValue = null;
+                    if (IsRetain != null) IsRetain = null;
+                    if (IsSetPoint != null) IsSetPoint = null;
                 }
-                else if (_interfaceSection == InterfaceSections.Input || _interfaceSection == InterfaceSections.Output || _interfaceSection == InterfaceSections.InOut)
+                else if (_interfaceSection == InterfaceSections.Input || 
+                    _interfaceSection == InterfaceSections.Output || _interfaceSection == InterfaceSections.InOut)
                 {
-                    IsSetPoint = null;
+                    if (IsSetPoint != null) IsSetPoint = null;
                 }
             }
             private bool IsValidInterfaceSection(string value)
