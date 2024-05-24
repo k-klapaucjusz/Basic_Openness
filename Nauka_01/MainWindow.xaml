@@ -408,6 +408,8 @@
                                 <Label Content="Import file: " Grid.Column="0"/>
                                 <TextBox Text="{Binding ImportFile}" Grid.Column="1"/>
                             </Grid>
+                            <Separator HorizontalAlignment="Stretch" Background="Green"/>
+                            <Button x:Name="btnProjectsGenerateInstanceDB" Content="Generate instance DB" Click="btnProjectsGenerateInstanceDBClick"/>
 
                         </StackPanel>
 

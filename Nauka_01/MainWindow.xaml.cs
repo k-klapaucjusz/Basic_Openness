@@ -34,6 +34,7 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using Clipboard = System.Windows.Forms.Clipboard;
 using static Basic_Openness.SclWrapper;
+using Siemens.Engineering.SW.Blocks.Interface;
 
 namespace Basic_Openness
 {
@@ -366,7 +367,7 @@ namespace Basic_Openness
                                     programBlockNode = new TreeNode(programBlock.Name, programBlock.Number.ToString(), blockType);
                                 }
                                 else
-                                    { programBlockNode = new TreeNode(programBlock.Name); }
+                                { programBlockNode = new TreeNode(programBlock.Name); }
                                 deviceItemNode.Children.Add(programBlockNode);
 
                             }
@@ -408,11 +409,32 @@ namespace Basic_Openness
             if (_apiWrapper.ProjectTreeLeaf != null && _apiWrapper.ProjectTreeLeaf.Name != String.Empty)
             {       //!!!!! odniesienie do elementu 0 listy - może być więcej niż jedno urządzenie zawierające PlcSoftware.
                     //!!!!! trzeba to poprawić żeby było bardziej uniwersalnie
-                if (_apiWrapper.PlcSoftwares[0].BlockGroup.Blocks.Find(_apiWrapper.ProjectTreeLeaf.Name) != null)
+                PlcBlock selectedBlock = _apiWrapper.PlcSoftwares[0].BlockGroup.Blocks.Find(_apiWrapper.ProjectTreeLeaf.Name);
+
+
+                if (selectedBlock != null)
                 {
+
+                    if ((selectedBlock as InstanceDB) != null)
+                    {
+                        Console.WriteLine($"TREE VIEW: BLOCK IS INSTANCE DB: {_apiWrapper.ProjectTreeLeaf.Name}; {(selectedBlock as InstanceDB).InstanceOfName}");
+                        foreach (var member in (selectedBlock as InstanceDB).Interface.Members)
+                        {
+                            try
+                            {
+                                Console.WriteLine($"TREE VIEW: INSTANCE DB mamber: {member.Name} ");
+                            }
+                            catch { 
+                            Console.WriteLine($"Exception: GetAttribute({member.Name}) - generuje blad");
+                                // catch było do testów GetAttribute(member.Name) - to zawsze geneneruje wyjatek
+                            }
+
+                        }
+                    }
+
+
                     // check blocks in main branch 
                     _apiWrapper.ProjectSelectedPlcBlock = _apiWrapper.PlcSoftwares[0].BlockGroup.Blocks.Find(_apiWrapper.ProjectTreeLeaf.Name);
-
                     Console.WriteLine($"TREE VIEW: SELECTED BLOCK = {_apiWrapper.ProjectSelectedPlcBlock.Name}");
                     // teraz trzeba w xaml zrobić wyświetlenie właściwości bloku: nazwa, typ, data itd
                     // poźniej przyciski export i import
@@ -422,7 +444,7 @@ namespace Basic_Openness
                 foreach (var group in _apiWrapper.PlcSoftwares[0].BlockGroup.Groups)
                 {
                     // check blocks inside folders
-                    if(group.Blocks.Find(_apiWrapper.ProjectTreeLeaf.Name) != null)
+                    if (group.Blocks.Find(_apiWrapper.ProjectTreeLeaf.Name) != null)
                     {
                         _apiWrapper.ProjectSelectedPlcBlock = group.Blocks.Find(_apiWrapper.ProjectTreeLeaf.Name);
                         break;
@@ -467,10 +489,10 @@ namespace Basic_Openness
 
         private void btnProjectsExportBlockClick(object sender, RoutedEventArgs e)
         {
-            if (_apiWrapper.ExportFolder != null) 
+            if (_apiWrapper.ExportFolder != null)
             {
-                System.IO.FileInfo newFile = new System.IO.FileInfo(_apiWrapper.ExportFolder+@"\"+_apiWrapper.ProjectSelectedPlcBlock.Name+@".xml");
-                _apiWrapper.ProjectSelectedPlcBlock.Export(newFile , ExportOptions.None);
+                System.IO.FileInfo newFile = new System.IO.FileInfo(_apiWrapper.ExportFolder + @"\" + _apiWrapper.ProjectSelectedPlcBlock.Name + @".xml");
+                _apiWrapper.ProjectSelectedPlcBlock.Export(newFile, ExportOptions.None);
                 // gdy eksportowany plik już istnieje (albo tylko gdy istnieje i jest otwarty w jakimś edytorze - to muszę potwierdzić)
                 // to pojawia się wyjątke który trzeba obsłużyć. 
                 // Obsługa wyjątku ma polegać na wyświetleniu okienka z pytaniem czy nadpisać istniejący
@@ -485,9 +507,9 @@ namespace Basic_Openness
         {
             string blockNames = "";
             IList<PlcBlock> blocks = _apiWrapper.PlcSoftwares[0].BlockGroup.Blocks.Import(new System.IO.FileInfo(_apiWrapper.ImportFile), ImportOptions.Override);
-            foreach(var block in blocks)
+            foreach (var block in blocks)
             {
-                blockNames += blockNames + ": "+ block.Name;
+                blockNames += blockNames + ": " + block.Name;
             }
             Console.WriteLine($"IMPORTED FILES LIST: {blockNames}");
 
@@ -517,11 +539,11 @@ namespace Basic_Openness
             XElement elementSections = new XElement(_xmlWrapper.NsInterface + "Sections");
             //XElement elementSections = new XElement("Sections");
             elementInterface.Add(elementSections);
-            elementSections.Add(new XElement(_xmlWrapper.NsInterface + "Section", new XAttribute("Name", "Input")), 
+            elementSections.Add(new XElement(_xmlWrapper.NsInterface + "Section", new XAttribute("Name", "Input")),
                 new XElement(_xmlWrapper.NsInterface + "Section", new XAttribute("Name", "Output")),
                  new XElement(_xmlWrapper.NsInterface + "Section", new XAttribute("Name", "InOut")),
                  new XElement(_xmlWrapper.NsInterface + "Section", new XAttribute("Name", "Static")),
-                  new XElement(_xmlWrapper.NsInterface + "Section", new XAttribute("Name", "Temp")), 
+                  new XElement(_xmlWrapper.NsInterface + "Section", new XAttribute("Name", "Temp")),
                   new XElement(_xmlWrapper.NsInterface + "Section", new XAttribute("Name", "Constant")));
 
 
@@ -546,7 +568,7 @@ namespace Basic_Openness
             Clipboard.SetText(_xmlWrapper.RootElementAsString);
         }
 
-        
+
 
         private void btnXmlGenerateTempClick(object sender, RoutedEventArgs e)
         {
@@ -571,11 +593,11 @@ namespace Basic_Openness
         {
             XElement interfaceSection = _xmlWrapper.GeneratedXml.Descendants(_xmlWrapper.NsInterface + "Sections").Elements(_xmlWrapper.NsInterface + "Section")
                 .FirstOrDefault(elem => elem.Attribute("Name")?.Value == "Static");
-            
+
             if (interfaceSection != null)
             {
-                XElement newMember = new XElement(_xmlWrapper.NsInterface + "Member", 
-                    new XAttribute("Name", _xmlWrapper.InterfaceStaticName), 
+                XElement newMember = new XElement(_xmlWrapper.NsInterface + "Member",
+                    new XAttribute("Name", _xmlWrapper.InterfaceStaticName),
                     new XAttribute("Datatype", _xmlWrapper.InterfaceStaticDatatype));
                 interfaceSection.Add(newMember);
                 _xmlWrapper.RootElementAsString = _xmlWrapper.GeneratedXml.ToString();
@@ -592,8 +614,8 @@ namespace Basic_Openness
 
             if (interfaceSection != null)
             {
-                XElement newMember = new XElement(_xmlWrapper.NsInterface + "Member", 
-                    new XAttribute("Name", _xmlWrapper.InterfaceInputName), 
+                XElement newMember = new XElement(_xmlWrapper.NsInterface + "Member",
+                    new XAttribute("Name", _xmlWrapper.InterfaceInputName),
                     new XAttribute("Datatype", _xmlWrapper.InterfaceInputDatatype));
                 interfaceSection.Add(newMember);
                 _xmlWrapper.RootElementAsString = _xmlWrapper.GeneratedXml.ToString();
@@ -641,9 +663,9 @@ namespace Basic_Openness
             Operand operand1 = new Operand(MemoryAreas.LocalVariable, name: "Sensor1", dataType: "Real")
             {
                 InterfaceSection = InterfaceSections.Static,
-                
+
                 //MemoryArea = MemoryAreas.LocalVariable,
-                
+
             };
             Operand operand2 = new Operand(MemoryAreas.LocalVariable, name: "Sensor2", dataType: "Real")
             {
@@ -666,8 +688,9 @@ namespace Basic_Openness
 
 
             XElement structuredText = _xmlWrapper.RootElementXml.
-                Descendants(_sclWrapper.Ns+SclNodes.StructuredText)?.FirstOrDefault();
-            if (structuredText != null) {
+                Descendants(_sclWrapper.Ns + SclNodes.StructuredText)?.FirstOrDefault();
+            if (structuredText != null)
+            {
                 List<XElement> sclCode = _sclWrapper.SclGenerateAssignment(operand1, operand2);
                 foreach (var element in sclCode)
                 {
@@ -709,6 +732,44 @@ namespace Basic_Openness
             {
                 Console.WriteLine("Anulowano wybór folderu.");
             }
+        }
+
+        private void btnProjectsGenerateInstanceDBClick(object sender, RoutedEventArgs e)
+        {
+            // testy !!!!
+
+            //////bool blockNotFound = false;
+            //////_apiWrapper.ProjectTreeLeaf = (TreeNode)e.NewValue;
+            //////Console.WriteLine($"TREE VIEW: Selected leaf = {_apiWrapper.ProjectTreeLeaf?.Name}");
+            //////if (_apiWrapper.ProjectTreeLeaf != null && _apiWrapper.ProjectTreeLeaf.Name != String.Empty)
+
+            //////    if (_apiWrapper.PlcSoftwares[0].BlockGroup.Blocks.Find(_apiWrapper.ProjectTreeLeaf.Name) != null)
+
+            //PlcBlock plcBlock = _apiWrapper.PlcSoftwares[0].BlockGroup.Blocks.Find(_apiWrapper.ProjectTreeLeaf.Name);
+            //InstanceDB instanceDB1 = _apiWrapper.PlcSoftwares[0].BlockGroup.Blocks.Find(_apiWrapper.ProjectTreeLeaf.Name) as InstanceDB;
+            //MemberComposition blockInterface = instanceDB1.Interface.Members;
+
+            //////_apiWrapper.PlcSoftwares[0].BlockGroup.Blocks.Find(_apiWrapper.ProjectTreeLeaf.Name) as InstanceDB;
+
+            PlcBlockGroup blockFolder = _apiWrapper.PlcSoftwares[0].BlockGroup;
+            PlcBlockComposition blockComposition = blockFolder.Blocks;
+            if (blockComposition != null && _apiWrapper.ProjectTreeLeaf.Name != null)
+            {
+                var programmingLanguage = ProgrammingLanguage.SCL;
+                InstanceDB iDbBlock = blockComposition.CreateInstanceDB("idb__" + _apiWrapper.ProjectTreeLeaf.Name + "_test", true, 111, _apiWrapper.ProjectTreeLeaf.Name);
+
+                foreach (var block in iDbBlock.Interface.Members)
+                {
+                    Console.WriteLine($"{block.Name} ");
+                    //Console.WriteLine($"{block.Name} // chyba tu jest error {block.GetAttribute(block.Name)} ");
+                }
+            }
+            else Console.WriteLine("TESTY: PlcBlockComposition = null!!!");
+
+
+
+            // testy !!!!
+
         }
     }
 }
