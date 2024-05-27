@@ -339,7 +339,7 @@ namespace Basic_Openness
                     if (IsRetain != null) IsRetain = null;
                     if (IsSetPoint != null) IsSetPoint = null;
                 }
-                else if (_interfaceSection == InterfaceSections.Input || 
+                else if (_interfaceSection == InterfaceSections.Input ||
                     _interfaceSection == InterfaceSections.Output || _interfaceSection == InterfaceSections.InOut)
                 {
                     if (IsSetPoint != null) IsSetPoint = null;
@@ -383,6 +383,81 @@ namespace Basic_Openness
                 return fields.Any(field => (string)field.GetValue(null) == token);
             }
         }
+
+        //klasa FBInterface
+        //
+        public class FBInterface
+        {
+            public List<Operand> Input { get; set; } = new List<Operand>();
+            public List<Operand> Output { get; set; } = new List<Operand>();
+            public List<Operand> InOut { get; set; } = new List<Operand>();
+
+        }
+        /////////////////////////////////////////////////////
+        /// ODCZYT INTERFACE BLOKU FB
+        // Metoda wywołująca blok FB w SCL musi wiedzieć jak wyglada interface bloku FB.
+        // Żeby się tego dowiedzieć trzeba blok o takiej nazwie znaleźć w projekcie, następnie:
+        //  - wyeksportować do XML
+        //  - odcztać strukturę inteface z pliku XML do zmiennej klasy FBInterface 
+        //    (oraz zapisać ten interfejs do słownika zmierające interfejsy bloków FB na których
+        //    aplikacja aktualnie pracuje Dictionary currentFBInterfaces<string, FBInterface>)
+
+        /// <summary>
+        /// funkcja zwraca interface bloku FB. 
+        /// Przeszukuje miejsca w których takie informację mogą być przechowywane
+        ///   1) w słowniku currentFBInterfaces
+        ///   2) w folderze na dysku szuka pliku xml z nazwą FB. Jeśli nie będzie podana ścieżka do 
+        ///       pliku to otwiera się okna dialogowe wyboru folderu.
+        ///   3) szuka w projekcie bloku FB i exportuje go do pliku xml. Z pliku xml odczytany zostaje
+        ///      interfejs bloku FB.
+        ///   4) jeśli zostanie odnaleziony interface bloku FB to medoda zwraca null
+        /// 
+        /// </summary>
+        /// <param string name="fbName" Dcitionary FBInterface="currentFBInterface"
+        /// folder="pathToExportedFBs"></param>
+        /// <returns> interface lub null jeśli nie zostanie odnaleziony blok FB </returns>
+        /// 
+
+        public FBInterface GetFBInterface(string fbName, Dictionary<string, FBInterface> currentFBInterfaces, string folder = null)
+        {
+            FBInterface fbInterface = new FBInterface();
+            if (currentFBInterfaces.ContainsKey(fbName))
+            {
+                return  currentFBInterfaces[fbName];
+            }
+            else
+            {
+                // sprawdzenie czy poszukiwany FB został już wcześniej wyeksportowany
+                
+                
+                {
+                    // otwarcie okna dialogowego do wyboru folderu
+                    // folder = OpenFolderDialog();
+                }
+                // sprawdzenie czy w folderze jest plik xml z interfejsem bloku FB
+                // jeśli nie ma to szukanie bloku FB w projekcie i eksportowanie go do pliku xml
+                // odczytanie interfejsu bloku FB z pliku xml
+            }
+            return fbInterface;
+        }
+
+        public bool FindFile(string fbName, string folder)
+        {
+            // TODO
+            return true;
+        }
+        
+        public FBInterface GetFBInterfaceFromXML(string fbName)
+        {
+            // TODO
+            return null;
+        }
+        public void ExportBlockToXML(string blockName, string blockType)
+        {
+            // TODO
+        }
+
+
 
 
         public XElement SclGenerateAccess(Operand operand)
@@ -480,6 +555,14 @@ namespace Basic_Openness
         }
 
 
+        /// <summary>
+        /// Generates assignment elements based on the provided left and right operands.
+        /// </summary>
+        /// <param name="leftSide">The left operand of the assignment.</param>
+        /// <param name="rightSide">The list of right operands for the assignment.</param>
+        /// <returns>
+        /// A list of XElement representing the assignment elements.
+        /// </returns>
         private List<XElement> GeneateAssignment(Operand leftSide, List<ISclSyntax> rightSide)
         {
             List<XElement> assignmentElement = new List<XElement>();
@@ -534,6 +617,7 @@ namespace Basic_Openness
             UId = _uid;
             return assignmentElement;
         }
+
         private XElement[] SclGenerateAssignSign()
         {
             return new XElement[]
