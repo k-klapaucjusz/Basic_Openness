@@ -1,13 +1,17 @@
-﻿using System;
+﻿using Siemens.Engineering.SW;
+using Siemens.Engineering.SW.Blocks;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Xml.Linq;
 
 namespace Basic_Openness
@@ -423,13 +427,13 @@ namespace Basic_Openness
             FBInterface fbInterface = new FBInterface();
             if (currentFBInterfaces.ContainsKey(fbName))
             {
-                return  currentFBInterfaces[fbName];
+                return currentFBInterfaces[fbName];
             }
             else
             {
                 // sprawdzenie czy poszukiwany FB został już wcześniej wyeksportowany
-                
-                
+
+
                 {
                     // otwarcie okna dialogowego do wyboru folderu
                     // folder = OpenFolderDialog();
@@ -440,21 +444,131 @@ namespace Basic_Openness
             }
             return fbInterface;
         }
+        /// <summary>
+        /// funkcja zwraca true jeśli plik istnieje. Jeśli ścieżka do folderu nie jest podana
+        ///   to otwiera się okno dialogowege.
+        /// </summary>
+        /// <param name="fbName"></param>
+        /// <param name="folder"></param>
+        /// <returns></returns>
 
         public bool FindFile(string fbName, string folder)
         {
-            // TODO
-            return true;
+            if (folder == null || folder == "")
+            {
+                // otwarcie okna dialogowego do wyboru folderu
+                FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+
+                // Ustaw opcje wyboru folderu
+                folderBrowserDialog.Description = "Select folder";
+                folderBrowserDialog.RootFolder = Environment.SpecialFolder.Desktop;
+
+                // Wyświetl okno dialogowe i sprawdź czy użytkownik wybrał folder
+                DialogResult result = folderBrowserDialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    return File.Exists(Path.Combine(folderBrowserDialog.SelectedPath, fbName));
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+
+            return File.Exists(Path.Combine(folder, fbName));
         }
-        
-        public FBInterface GetFBInterfaceFromXML(string fbName)
+
+
+
+        /// <summary>
+        /// funkcja zwraca interface bloku FB.
+        /// Działanie:
+        /// - sprawdzenie czy blok zawieral element <SW.Blocks.FB>
+        /// - odnalezienie elementu <Interface>
+        /// - odnalezienie sekcji <Input>, <Output>, <InOut>. Iteracja po elementach tych sekcji i dodanie odczytanych
+        ///   zmiennych (operanów) do zmiennej klasy FBInterface
+        /// </summary>
+        /// <param name="XmlFileName"></param>
+        /// <param name="InterfaceNs"></param>
+        /// <returns> zwraca FBInterface lub null jeśli niepowodzenie </returns>
+
+
+
+
+        public FBInterface GetFBInterfaceFromXML(string XmlFileName, XNamespace InterfaceNs)
+        {
+            XDocument doc = XDocument.Load(XmlFileName);
+            XElement fbElement = doc.Descendants("SW.Blocks.FB").FirstOrDefault();
+
+            if (fbElement != null)
+            {
+                XElement interfaceElement = fbElement.Element(InterfaceNs + "Interface");
+
+                if (interfaceElement != null)
+                {
+                    FBInterface fbInterface = new FBInterface();
+
+                    foreach (XElement section in interfaceElement.Elements(InterfaceNs + "Section"))
+                    {
+                        // tutaj ma być instrukcja case w zależności od Section "Name" = : Input, Output, InOut
+                        switch (section.Attribute("Name").Value)
+                        {
+                            case "Input":
+                                // TO DO: do przeanalizowania bo to sztuczniak wygenerował i trzeba sprawdzić!!!!!
+                                foreach (XElement variable in section.Elements(InterfaceNs + "Member"))
+                                {
+                                    string name = variable.Attribute("Name").Value;
+                                    string type = variable.Attribute("Type").Value;
+
+                                    fbInterface.AddVariable(name, type);
+                                }
+                                break;
+                            case "Output":
+                                // Do something for Output section
+                                break;
+                            case "InOut":
+                                // Do something for InOut section
+                                break;
+                            default:
+                                // Handle other cases if needed
+                                break;
+                        }
+                        
+                    }
+                    
+
+                    return fbInterface;
+                }
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// eksport blok do pliku xml
+        ///   - jeśli folderPath = null || folderPath = "" to otwiera się okno dialogowe do wyboru folderu
+        /// </summary>
+        /// <param name="plcBlock"></param>
+        /// <param name="blockName"></param>
+        /// <param name="folderPath"></param>
+        /// <returns> true jeśli plik został zapisany </returns>
+        public bool ExportBlockToXML(PlcBlock plcBlock, string blockName, string folderPath)
+        {
+            // TODO
+            return false;
+        }
+        /// <summary>
+        /// zwraca blok z projektu. Główny folder oraz podfoldery są sprawdzane w celu znalezienia bloku.
+        /// </summary>
+        /// <param name="blockName"></param>
+        /// <param name="plcsoftwaresList"></param>
+        /// <returns> zwraca null jeśli blok nie został znaleziony </returns>
+        public PlcBlock GetPlcBlockFromProject(string blockName, List<PlcSoftware> plcsoftwaresList)
         {
             // TODO
             return null;
-        }
-        public void ExportBlockToXML(string blockName, string blockType)
-        {
-            // TODO
         }
 
 

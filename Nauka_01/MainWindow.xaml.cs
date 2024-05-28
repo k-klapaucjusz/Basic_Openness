@@ -658,6 +658,35 @@ namespace Basic_Openness
             else Console.WriteLine("SAVE XML FILE - coś poszło nie tak");
         }
 
+        private void btnXmlSaveAsClick(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog()
+            {
+                Title = "Save file as",
+                DefaultExt = ".xml",
+                Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*",
+                FileName = _xmlWrapper.XmlOpenFileDialog.FileName.Split(new[] { '.' }).FirstOrDefault() + "_import"
+            };
+            bool? result = saveFileDialog.ShowDialog();
+            if (result == true)
+            {
+                string filePath = saveFileDialog.FileName;
+                if (!filePath.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
+                {
+                    filePath += ".xml";
+                }
+                _xmlWrapper.XmlFile.Save(filePath);
+
+                // Wyświetl wybraną ścieżkę
+                Console.WriteLine("Selected folder: " + saveFileDialog.FileName);
+            }
+            else
+            {
+                Console.WriteLine("Anulowano wybór folderu.");
+            }
+        }
+
+
         private void btnXmlGenerateAssignmentClick(object sender, RoutedEventArgs e)
         {
             Operand operand1 = new Operand(MemoryAreas.LocalVariable, name: "Sensor1", dataType: "Real")
@@ -706,33 +735,6 @@ namespace Basic_Openness
 
         }
 
-        private void btnXmlSaveAsClick(object sender, RoutedEventArgs e)
-        {
-            Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog()
-            {
-                Title = "Save file as",
-                DefaultExt = ".xml",
-                Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*",
-                FileName = _xmlWrapper.XmlOpenFileDialog.FileName.Split(new[] { '.' }).FirstOrDefault() + "_import"
-            };
-            bool? result = saveFileDialog.ShowDialog();
-            if (result == true)
-            {
-                string filePath = saveFileDialog.FileName;
-                if (!filePath.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
-                {
-                    filePath += ".xml";
-                }
-                _xmlWrapper.XmlFile.Save(filePath);
-
-                // Wyświetl wybraną ścieżkę
-                Console.WriteLine("Selected folder: " + saveFileDialog.FileName);
-            }
-            else
-            {
-                Console.WriteLine("Anulowano wybór folderu.");
-            }
-        }
 
         private void btnProjectsGenerateInstanceDBClick(object sender, RoutedEventArgs e)
         {
