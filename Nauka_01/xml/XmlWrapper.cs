@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -28,6 +29,8 @@ namespace Basic_Openness
                 }
             }
         }
+
+        public Dictionary<string, SclWrapper.FBInterface> FBInterfacesDictionary { get; set; }
 
         public XElement GeneratedXml { get; set; }
         public XElement RootElementXml { get; set; }

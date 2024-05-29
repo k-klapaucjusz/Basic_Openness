@@ -1,4 +1,5 @@
-﻿using Siemens.Engineering.SW;
+﻿using Siemens.Engineering.HW.Features;
+using Siemens.Engineering.SW;
 using Siemens.Engineering.SW.Blocks;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ using System.Xml.Linq;
 
 namespace Basic_Openness
 {
-    internal class SclWrapper : INotifyPropertyChanged
+    public class SclWrapper : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
@@ -274,6 +275,7 @@ namespace Basic_Openness
 
             public MultiLanguageText Comment { get; set; } = null;
             public List<BooleanAttribute> Attributes { get; set; } = null;
+
             //private string[] _startValueAllowed = { InterfaceSections.Input, InterfaceSections.Output, InterfaceSections.InOut, InterfaceSections.Static, InterfaceSections.Constant };
             /// <summary>
             /// 6) StartValue are only allowed for LocalVariable interfaceSection: Input, Output, InOut, Static, Constant
@@ -325,9 +327,6 @@ namespace Basic_Openness
                 }
             }
 
-
-
-
             private void ValidateProperties()
             {
                 if (_interfaceSection == InterfaceSections.Constant)
@@ -349,6 +348,7 @@ namespace Basic_Openness
                     if (IsSetPoint != null) IsSetPoint = null;
                 }
             }
+
             private bool IsValidInterfaceSection(string value)
             {
                 var interfaceSections = typeof(InterfaceSections).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
@@ -378,6 +378,7 @@ namespace Basic_Openness
                     }
                 }
             }
+
             public bool IsValidToken(string token)
             {
                 // Get all fields from the Token class
@@ -397,6 +398,8 @@ namespace Basic_Openness
             public List<Operand> InOut { get; set; } = new List<Operand>();
 
         }
+
+
         /////////////////////////////////////////////////////
         /// ODCZYT INTERFACE BLOKU FB
         // Metoda wywołująca blok FB w SCL musi wiedzieć jak wyglada interface bloku FB.
@@ -424,6 +427,14 @@ namespace Basic_Openness
 
         public FBInterface GetFBInterface(string fbName, Dictionary<string, FBInterface> currentFBInterfaces, string folder = null)
         {
+            // Test metody (w części viwe)
+            //  - przygotować pole które będzie służyło do wprowadzenia nazwy bloku FB
+            //  - pole do wyświetlenia nazwy folderu
+            //  - przycicisk do wyboru folderu
+            //  - przycisk do wywołania metody GetFBInterface 
+            //  
+            //  - rozwijane pole do wyświetlenia zgromadzonych interfejsów
+            //  - obszar tekstowy do wyświetlenia interfejsu bloku FB (właśnie wygenerowanego albo wyświetlonego)
             FBInterface fbInterface = new FBInterface();
             if (currentFBInterfaces.ContainsKey(fbName))
             {
@@ -442,8 +453,12 @@ namespace Basic_Openness
                 // jeśli nie ma to szukanie bloku FB w projekcie i eksportowanie go do pliku xml
                 // odczytanie interfejsu bloku FB z pliku xml
             }
+            // dodanie interfejsu bloku FB do słownika currentFBInterfaces
+            currentFBInterfaces.Add(fbName, fbInterface);
             return fbInterface;
         }
+
+
         /// <summary>
         /// funkcja zwraca true jeśli plik istnieje. Jeśli ścieżka do folderu nie jest podana
         ///   to otwiera się okno dialogowege.
@@ -451,7 +466,6 @@ namespace Basic_Openness
         /// <param name="fbName"></param>
         /// <param name="folder"></param>
         /// <returns></returns>
-
         public bool FindFile(string fbName, string folder)
         {
             if (folder == null || folder == "")
@@ -492,10 +506,6 @@ namespace Basic_Openness
         /// <param name="XmlFileName"></param>
         /// <param name="InterfaceNs"></param>
         /// <returns> zwraca FBInterface lub null jeśli niepowodzenie </returns>
-
-
-
-
         public FBInterface GetFBInterfaceFromXML(string XmlFileName, XNamespace InterfaceNs)
         {
             XDocument doc = XDocument.Load(XmlFileName);
@@ -515,28 +525,49 @@ namespace Basic_Openness
                         switch (section.Attribute("Name").Value)
                         {
                             case "Input":
-                                // TO DO: do przeanalizowania bo to sztuczniak wygenerował i trzeba sprawdzić!!!!!
+                                // odczyt danych z elementu. Przykładowa postać elementu:
+                                //<Member Name="rStatic3" Datatype="Real" Remanence="SetInIDB">
+                                //<AttributeList><BooleanAttribute Name="ExternalVisible" SystemDefined="true">false</BooleanAttribute>
+                                //<BooleanAttribute Name="ExternalWritable" SystemDefined="true">false</BooleanAttribute>
+                                //</AttributeList></Member>
+                                //zapisanie danych
+
                                 foreach (XElement variable in section.Elements(InterfaceNs + "Member"))
                                 {
-                                    string name = variable.Attribute("Name").Value;
-                                    string type = variable.Attribute("Type").Value;
-
-                                    fbInterface.AddVariable(name, type);
+                                    Operand newOperand = FromXmlReadInterfaceMember(variable, InterfaceNs);
+                                    if (newOperand != null)
+                                    {
+                                        fbInterface.Input.Add(newOperand);
+                                    }
                                 }
                                 break;
                             case "Output":
-                                // Do something for Output section
+                                foreach (XElement variable in section.Elements(InterfaceNs + "Member"))
+                                {
+                                    Operand newOperand = FromXmlReadInterfaceMember(variable, InterfaceNs);
+                                    if (newOperand != null)
+                                    {
+                                        fbInterface.Output.Add(newOperand);
+                                    }
+                                }
                                 break;
                             case "InOut":
-                                // Do something for InOut section
+                                foreach (XElement variable in section.Elements(InterfaceNs + "Member"))
+                                {
+                                    Operand newOperand = FromXmlReadInterfaceMember(variable, InterfaceNs);
+                                    if (newOperand != null)
+                                    {
+                                        fbInterface.InOut.Add(newOperand);
+                                    }
+                                }
                                 break;
                             default:
                                 // Handle other cases if needed
                                 break;
                         }
-                        
+
                     }
-                    
+
 
                     return fbInterface;
                 }
@@ -559,21 +590,114 @@ namespace Basic_Openness
             // TODO
             return false;
         }
+
+
         /// <summary>
-        /// zwraca blok z projektu. Główny folder oraz podfoldery są sprawdzane w celu znalezienia bloku.
+        /// zwraca blok z projektu. Przeszukiwanie na czterech poziomach:
+        ///   1) na poziomie urządzeń - projekt może zawierać wiele PLC
+        ///   2) na poziomie programów umieszczonych w głownym drzwie projektu (nie w folderach)
+        ///   3) na poziomie programów umieszczonych w folderach
+        ///   4) na poziomie bloków umieszczonych w podfolderach
         /// </summary>
         /// <param name="blockName"></param>
         /// <param name="plcsoftwaresList"></param>
         /// <returns> zwraca null jeśli blok nie został znaleziony </returns>
         public PlcBlock GetPlcBlockFromProject(string blockName, List<PlcSoftware> plcsoftwaresList)
         {
-            // TODO
+            // przeszukiwanie na poziomie urządzeń - projekt może zawierać wiele PLC
+            foreach (var plcSoftware in plcsoftwaresList)
+            {
+                //przeszukiwanie programów umieszczonych w głownym drzwie projektu (nie w folderach)
+                PlcBlock plcBlock = plcSoftware.BlockGroup.Blocks.Find(blockName);
+                if (plcBlock != null)
+                {
+                    return plcBlock;
+                }
+                foreach (var blockGroup in plcSoftware.BlockGroup.Groups)
+                {
+                    // przeszukianie w folderach
+                    plcBlock = blockGroup.Blocks.Find(blockName);
+                    if (plcBlock != null)
+                    {
+                        return plcBlock;
+                    }
+                    foreach (var subBlockGroup in blockGroup.Groups)
+                    {
+                        // przeszukianie w podfolderach
+                        plcBlock = subBlockGroup.Blocks.Find(blockName);
+                        if (plcBlock != null)
+                        {
+                            return plcBlock;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+            
+
+   
+
+        public Operand FromXmlReadInterfaceMember(XElement element, XNamespace InterfaceNs)
+        {
+            string name = element.Attribute("Name")?.Value;
+            string datatype = element.Attribute("Datatype")?.Value;
+            string remanence = element.Attribute("Remanence")?.Value;
+
+            if (name == null && datatype == null && name != "" && datatype != "")
+            {
+                // oczyt wartości z elementu StartValue 
+                string startValue = element.Element(InterfaceNs + "StartValue")?.Value;
+
+                //zapisanie danych do klasy FBInterface
+                Operand newOperand = new Operand(MemoryAreas.LocalVariable, datatype, name)
+                {
+                    InterfaceSection = InterfaceSections.Input,
+                    StartValue = startValue,
+                    IsRetain = remanence,
+
+                };
+                // odczyt AtributeList
+                List<XElement> attributeList = element.Descendants(InterfaceNs + "BooleanAttribute").ToList();
+                foreach (XElement attribute in attributeList)
+                {
+                    string attributeName = attribute.Attribute("Name")?.Value;
+                    string systemDefined = attribute.Attribute("SystemDefined")?.Value;
+                    string attributeValue = attribute.Value;
+
+                    switch (attributeName)
+                    {
+                        case "ExternalVisible":
+                            // Save or process the extracted data as needed
+                            break;
+                        case "ExternalWritable":
+                            // Save or process the extracted data as needed
+                            break;
+                        case "ExternalAccessible":
+                            // Save or process the extracted data as needed
+                            break;
+                        case "SetPoint":
+                            newOperand.IsSetPoint = attributeValue;
+                            break;
+                        default:
+                            // Handle other cases if needed
+                            Console.WriteLine($"GetFBInterfaceFromXML: Unknown attribute: {attributeName}");
+                            break;
+                    }
+                }
+                return newOperand;
+
+                // Save or process the extracted data as needed
+            }
+            Console.WriteLine($"GetFBInterfaceFromXML: data type{name} or name{datatype} is not defined");
             return null;
         }
 
 
+        //##########################################################################################################################
+        //       GENERATING XML
 
-
+        #region GENERATING XML
         public XElement SclGenerateAccess(Operand operand)
         {
             string[] localOperand =
@@ -659,10 +783,12 @@ namespace Basic_Openness
             }
 
         }
+
         public List<XElement> SclGenerateAssignment(Operand leftSide, Operand rightSide)
         {
             return GeneateAssignment(leftSide, new List<ISclSyntax> { rightSide });
         }
+
         public List<XElement> SclGenerateAssignment(Operand leftSide, List<ISclSyntax> rightSide)
         {
             return GeneateAssignment(leftSide, rightSide);
@@ -743,14 +869,19 @@ namespace Basic_Openness
 
 
         }
+
+
         private XElement SclGenerateToken(SclToken token)
         {
             return new XElement(_ns + SclNodes.Token, new XAttribute(SclNodes.Text, token.Value), new XAttribute(SclNodes.UId, ++_uid));
         }
+
+
         private XElement SclGenerateNewLine()
         {
             return new XElement(_ns + SclNodes.NewLine, new XAttribute(SclNodes.UId, ++_uid));
         }
+
         private XElement[] SclGenerateEndOfLine()
         {
             return new XElement[] {
@@ -758,6 +889,7 @@ namespace Basic_Openness
                 SclGenerateNewLine()
                     };
         }
+
         public static int GetMaxUId(XElement xmlElement)
         {
             // Select all attributes named "UId" and parse their values to integers
@@ -771,6 +903,7 @@ namespace Basic_Openness
             // Return the maximum value or 0 if no valid UId attributes are found
             return uids.Any() ? uids.Max() : 0;
         }
+
         public void XmlSetUid(int uid)
         {
             //_uid = ((uid >= _uid) ?
@@ -779,6 +912,9 @@ namespace Basic_Openness
             //if (_uid < 21) throw new ArgumentException("Error:UId < 21 ");
             UId = uid;
         }
+
+
+        #endregion
 
 
     }
